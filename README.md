@@ -6,9 +6,9 @@ References:
 2. AlphaGo Zero: Mastering the game of Go without human knowledge
 
 ### Example Games Between Trained Models
-- Each move  with 400 playouts:
+- Each move  with 400 playouts:  
 ![playout400](https://raw.githubusercontent.com/junxiaosong/AlphaZero_Gomoku/master/playout400.gif)
-- Each move  with 800 playouts:
+- Each move  with 800 playouts:  
 ![playout800](https://raw.githubusercontent.com/junxiaosong/AlphaZero_Gomoku/master/playout800.gif)
 
 ### Requirements
@@ -30,6 +30,6 @@ To train the AI model from scratch:
 > python train.py
 
 **Tips for training:**
-1. It is good to start with a 6 * 6 board and 4 in a row. For this case, we may obtain a reasonably good model within 500~1000 self-play games in about 1~2 hours.
+1. It is good to start with a 6 * 6 board and 4 in a row. For this case, we may obtain a reasonably good model within 500~1000 self-play games in about 2 hours.
 2. For the case of 8 * 8 board and 5 in a row, it may need 2000~3000 self-play games to get a good model, and it may take about 2 days on a single PC.
 
