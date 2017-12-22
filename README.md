@@ -18,7 +18,9 @@ To play with the trained AI models, only need:
 
 To train the AI model from scratch, further need:
 - Theano >= 0.7
-- Lasagne >= 0.1
+- Lasagne >= 0.1  
+
+If you would like to train the model using other DL frameworks, such as TensorFlow or PyTorch, you only need to rewrite policy_value_net.py.
 
 ### Getting Started
 To play with provided models, run the following script from the directory:  
@@ -26,8 +28,10 @@ To play with provided models, run the following script from the directory:
 
 You may modify human_play.py to try different provided models or the pure MCTS.
 
-To train the AI model from scratch:   
+To train the AI model from scratch, run:   
 > python train.py
+
+The models (best_policy.model and current_policy.model) will be saved every a few updates (default 50).
 
 **Tips for training:**
 1. It is good to start with a 6 * 6 board and 4 in a row. For this case, we may obtain a reasonably good model within 500~1000 self-play games in about 2 hours.
