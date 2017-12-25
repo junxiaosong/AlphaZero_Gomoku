@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 human VS AI models
+Input your move in the format: 2,3
 
 @author: Junxiao Song
 """ 
 
 from __future__ import print_function
 from game import Board, Game
-from policy_value_net import PolicyValueNet
+# from policy_value_net import PolicyValueNet
 from policy_value_net_numpy import PolicyValueNetNumpy
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
@@ -27,7 +28,8 @@ class Human(object):
     def get_action(self, board):
         try:
             location = input("Your move: ")
-#            location = [int(n, 10) for n in input("Your move: ").split(",")]  # for python3
+            if isinstance(location, str):
+                location = [int(n, 10) for n in location.split(",")]  # for python3
             move = board.location_to_move(location)
         except Exception as e:
             move = -1
@@ -61,7 +63,7 @@ def run():
         # uncomment the following line to play with pure MCTS (its much weaker even with a larger n_playout)
 #        mcts_player = MCTS_Pure(c_puct=5, n_playout=1000)
         
-        # human player
+        # human player, input your move in the format: 2,3
         human = Human()                   
         
         # set start_player=0 for human first
