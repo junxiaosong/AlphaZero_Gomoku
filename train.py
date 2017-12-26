@@ -125,11 +125,11 @@ class TrainPipeline():
                     print("current self-play batch: {}".format(i+1))
                     win_ratio = self.policy_evaluate()
                     net_params = self.policy_value_net.get_policy_param() # get model params
-                    pickle.dump(net_params, open('current_policy.model', 'wb')) # save model param to file
+                    pickle.dump(net_params, open('current_policy.model', 'wb'), pickle.HIGHEST_PROTOCOL) # save model param to file
                     if win_ratio > self.best_win_ratio: 
                         print("New best policy!!!!!!!!")
                         self.best_win_ratio = win_ratio
-                        pickle.dump(net_params, open('best_policy.model', 'wb')) # update the best_policy
+                        pickle.dump(net_params, open('best_policy.model', 'wb'), pickle.HIGHEST_PROTOCOL) # update the best_policy
                         if self.best_win_ratio == 1.0 and self.pure_mcts_playout_num < 5000:
                             self.pure_mcts_playout_num += 1000
                             self.best_win_ratio = 0.0
