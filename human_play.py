@@ -12,7 +12,8 @@ from game import Board, Game
 from policy_value_net_numpy import PolicyValueNetNumpy
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
-import cPickle as pickle
+# import cPickle as pickle
+import pickle
 
 class Human(object):
     """
@@ -45,20 +46,24 @@ class Human(object):
 def run():
     n = 5
     width, height = 8, 8
+    model_file = 'best_policy_8_8_5.model'
     try:
         board = Board(width=width, height=height, n_in_row=n)
         game = Game(board)      
         
         ################ human VS AI ###################        
         # MCTS player with the policy_value_net trained by AlphaZero algorithm
-#        policy_param = pickle.load(open('best_policy_8_8_5.model', 'rb'))
+#        policy_param = pickle.load(open(model_file, 'rb'))
 #        best_policy = PolicyValueNet(width, height, net_params = policy_param)
-#        mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5, n_playout=400)  # set larger n_playout for better performance
+#        mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5, n_playout=400)  
         
         # MCTS player with the trained policy_value_net written in pure numpy
-        policy_param = pickle.load(open('best_policy_8_8_5.model', 'rb'))
+        try:
+            policy_param = pickle.load(open(model_file, 'rb'))
+        except:
+            policy_param = pickle.load(open(model_file, 'rb'), encoding = 'bytes')  # To support python3
         best_policy = PolicyValueNetNumpy(width, height, policy_param)
-        mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5, n_playout=400)  
+        mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5, n_playout=400)  # set larger n_playout for better performance
         
         # uncomment the following line to play with pure MCTS (its much weaker even with a larger n_playout)
 #        mcts_player = MCTS_Pure(c_puct=5, n_playout=1000)

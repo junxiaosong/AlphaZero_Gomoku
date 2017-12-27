@@ -54,7 +54,7 @@ class Board(object):
         
         square_state = np.zeros((4, self.width, self.height))
         if self.states:
-            moves, players = np.array(zip(*self.states.iteritems()))
+            moves, players = np.array(list(zip(*self.states.items())))
             move_curr = moves[players == self.current_player]
             move_oppo = moves[players != self.current_player]                           
             square_state[0][move_curr // self.width, move_curr % self.height] = 1.0
