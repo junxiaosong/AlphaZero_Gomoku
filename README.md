@@ -20,6 +20,9 @@ To train the AI model from scratch, further need:
 - Theano >= 0.7
 - Lasagne >= 0.1  
 
+**PS**: if your Theano's version > 0.7, please follow this [issue](https://github.com/aigamedev/scikit-neuralnetwork/issues/235) to install Lasagne,  
+otherwise, force pip to downgrade Theano to 0.7 ``pip install --upgrade theano==0.7.0``
+
 If you would like to train the model using other DL frameworks, such as TensorFlow or PyTorch, you only need to rewrite policy_value_net.py.
 
 ### Getting Started
