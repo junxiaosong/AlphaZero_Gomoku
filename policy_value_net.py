@@ -57,7 +57,7 @@ class PolicyValueNet():
     def _loss_train_op(self):
         """
         Three loss terms：
-        loss = (z - v)^2 + pi^T * log(p) + c||theta||^2
+        loss = (z - v)^2 - pi^T * log(p) + c||theta||^2
         """
         params = lasagne.layers.get_all_params([self.policy_net, self.value_net], trainable=True)
         value_loss = lasagne.objectives.squared_error(self.winner, self.value.flatten())

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+An implementation of the training pipeline of AlphaZero for Gomoku
+
 @author: Junxiao Song
 """ 
 
@@ -9,13 +11,14 @@ import numpy as np
 import cPickle as pickle
 from collections import defaultdict, deque
 from game import Board, Game
-from policy_value_net import PolicyValueNet
+from policy_value_net import PolicyValueNet  # Theano and Lasagne
+# from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
 
 
 class TrainPipeline():
-    def __init__(self):
+    def __init__(self, init_model=None):
         # params of the board and the game
         self.board_width = 6
         self.board_height = 6
@@ -39,11 +42,13 @@ class TrainPipeline():
         self.best_win_ratio = 0.0
         # num of simulations used for the pure mcts, which is used as the opponent to evaluate the trained policy
         self.pure_mcts_playout_num = 1000  
-        # start training from a given policy-value net
-#        policy_param = pickle.load(open('current_policy.model', 'rb')) 
-#        self.policy_value_net = PolicyValueNet(self.board_width, self.board_height, net_params = policy_param)
-        # start training from a new policy-value net
-        self.policy_value_net = PolicyValueNet(self.board_width, self.board_height) 
+        if init_model:
+            # start training from an initial policy-value net
+            policy_param = pickle.load(open(init_model, 'rb')) 
+            self.policy_value_net = PolicyValueNet(self.board_width, self.board_height, net_params = policy_param)
+        else:
+            # start training from a new policy-value net
+            self.policy_value_net = PolicyValueNet(self.board_width, self.board_height) 
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn, c_puct=self.c_puct, n_playout=self.n_playout, is_selfplay=1)
 
     def get_equi_data(self, play_data):
