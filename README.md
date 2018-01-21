@@ -47,7 +47,8 @@ and uncomment the line
 ```
 # from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 ```
-and then execute: ``python train.py``
+and then execute: ``python train.py``  
+To use GPU training, change ``use_gpu=False`` to ``use_gpu=True``
 
 The models (best_policy.model and current_policy.model) will be saved every a few updates (default 50).
 
