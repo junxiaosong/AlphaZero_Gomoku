@@ -21,7 +21,7 @@ To play with the trained AI models, only need:
 To train the AI model from scratch, further need, either:
 - Theano >= 0.7 and Lasagne >= 0.1      
 or
-- PyTorch 0.2.0 (probably work with other versions, but I didn't test it)
+- PyTorch >= 0.2.0
 
 **PS**: if your Theano's version > 0.7, please follow this [issue](https://github.com/aigamedev/scikit-neuralnetwork/issues/235) to install Lasagne,  
 otherwise, force pip to downgrade Theano to 0.7 ``pip install --upgrade theano==0.7.0``
@@ -47,8 +47,7 @@ and uncomment the line
 ```
 # from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 ```
-and then execute: ``python train.py``  
-To use GPU training, change ``use_gpu=False`` to ``use_gpu=True``
+and then execute: ``python train.py``  (To use GPU training, set ``use_gpu=True``)
 
 The models (best_policy.model and current_policy.model) will be saved every a few updates (default 50).
 

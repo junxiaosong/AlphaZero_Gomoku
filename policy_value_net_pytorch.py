@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-An implementation of the policyValueNet in PyTorch (tested in PyTorch 0.2.0)
+An implementation of the policyValueNet in PyTorch (tested in PyTorch 0.2.0 and 0.3.0)
 
 @author: Junxiao Song
 """ 
@@ -55,7 +55,7 @@ class Net(nn.Module):
 
 class PolicyValueNet():
     """policy-value network """
-    def __init__(self, board_width, board_height, net_params=None,use_gpu=False):        
+    def __init__(self, board_width, board_height, net_params=None, use_gpu=False):        
         self.use_gpu = use_gpu
         self.board_width = board_width
         self.board_height = board_height
