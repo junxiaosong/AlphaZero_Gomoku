@@ -9,8 +9,8 @@ Input your move in the format: 2,3
 from __future__ import print_function
 from game import Board, Game
 # from policy_value_net import PolicyValueNet
-# from policy_value_net_numpy import PolicyValueNetNumpy
-from policy_value_net_tensorflow import PolicyValueNet
+from policy_value_net_numpy import PolicyValueNetNumpy
+# from policy_value_net_tensorflow import PolicyValueNet
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
 import pickle
