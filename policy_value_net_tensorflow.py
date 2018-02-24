@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-An implementation of the policyValueNet in Tensorflow (tested in Tensorflow 1.5.0)
+An implementation of the policyValueNet in Tensorflow (tested in Tensorflow 1.4 and 1.5)
 
 @author: Xiang Zhong
 """
@@ -9,15 +9,13 @@ import numpy as np
 import tensorflow as tf
 
 class PolicyValueNet():
-    def __init__(self, board_width, board_height, batch_size=512, model_file=None):
+    def __init__(self, board_width, board_height, model_file=None):
         self.board_width = board_width
         self.board_height = board_height
-        self.batch_size = batch_size
 
         # Define the tensorflow neural network
         # 1. Input:
-        self.input_states = tf.placeholder(tf.float32, shape=[None, 4, board_height, board_width])
-        # self.input_states = tf.placeholder(tf.float32, shape=[None, board_height, board_width, 4])
+        self.input_states = tf.placeholder(tf.float32, shape=[None, 4, board_height, board_width])        
         self.input_states_reshaped = tf.reshape(self.input_states, [-1, board_height, board_width, 4])
         # 2. Common Networks Layers
         self.conv1 = tf.layers.conv2d(inputs=self.input_states_reshaped, filters=32, kernel_size=[3, 3], padding="same", activation=tf.nn.relu)
@@ -47,14 +45,15 @@ class PolicyValueNet():
         self.mcts_probs = tf.placeholder(tf.float32, shape=[None, board_height * board_width])
         self.policy_loss = tf.negative(tf.reduce_mean(tf.reduce_sum(tf.multiply(self.mcts_probs, self.action_fc), 1)))
         # 3-3. L2 penalty (regularization)
-        l2_penalty_beta = tf.constant(1e-4)
-        l2_penalty_weights = tf.nn.l2_loss(tf.Variable(tf.truncated_normal([self.batch_size, board_height, board_width])))
-        l2_penalty = tf.multiply(l2_penalty_beta, l2_penalty_weights)
+        l2_penalty_beta = 1e-4
+        vars = tf.trainable_variables() 
+        l2_penalty = l2_penalty_beta * tf.add_n([tf.nn.l2_loss(v) for v in vars if 'bias' not in v.name.lower()])                
         # 3-4 Add up to be the Loss function
         self.loss = self.value_loss + self.policy_loss + l2_penalty
 
         # Define the optimizer we use for training
-        self.optimizer = tf.train.AdamOptimizer().minimize(self.loss)
+        self.learning_rate = tf.placeholder(tf.float32)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.loss)
 
         # Make a session
         self.session = tf.Session()
@@ -94,13 +93,15 @@ class PolicyValueNet():
     def train_step(self, state_batch, mcts_probs, winner_batch, lr):
         """perform a training step"""
         winner_batch = np.reshape(winner_batch, (-1, 1))
-        loss, entropy, _ = self.session.run([self.loss, self.entropy, self.optimizer], feed_dict={self.input_states: state_batch, self.mcts_probs: mcts_probs, self.labels: winner_batch})
+        loss, entropy, _ = self.session.run([self.loss, self.entropy, self.optimizer], 
+                                            feed_dict={self.input_states: state_batch, 
+                                                       self.mcts_probs: mcts_probs, 
+                                                       self.labels: winner_batch, 
+                                                       self.learning_rate: lr})
         return loss, entropy
 
     def save_model(self, model_path):
         self.saver.save(self.session, model_path)
-        return
 
     def restore_model(self, model_path):
         self.saver.restore(self.session, model_path)
-        return

@@ -11,6 +11,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
+import pickle
 
 def set_learning_rate(optimizer, lr):
     """Sets the learning rate to the given value"""    
@@ -55,7 +56,7 @@ class Net(nn.Module):
 
 class PolicyValueNet():
     """policy-value network """
-    def __init__(self, board_width, board_height, net_params=None, use_gpu=False):        
+    def __init__(self, board_width, board_height, model_file=None, use_gpu=False):        
         self.use_gpu = use_gpu
         self.board_width = board_width
         self.board_height = board_height
@@ -67,7 +68,8 @@ class PolicyValueNet():
             self.policy_value_net = Net(board_width, board_height)
         self.optimizer = optim.Adam(self.policy_value_net.parameters(), weight_decay=self.l2_const)
 
-        if net_params:
+        if model_file:
+            net_params = pickle.load(open(model_file, 'rb'))
             self.policy_value_net.load_state_dict(net_params)
 
     def policy_value(self, state_batch):
@@ -137,3 +139,8 @@ class PolicyValueNet():
     def get_policy_param(self):
         net_params = self.policy_value_net.state_dict()
         return net_params
+
+    def save_model(self, model_file):
+        """ save model params to file """
+        net_params = self.get_policy_param() # get model params
+        pickle.dump(net_params, open(model_file, 'wb'), protocol=2)        

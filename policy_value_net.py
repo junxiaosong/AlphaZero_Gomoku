@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+An implementation of the policyValueNet in Theano and Lasagne
+
 @author: Junxiao Song
 """ 
 
@@ -7,17 +9,22 @@ from __future__ import print_function
 import theano
 import theano.tensor as T
 import lasagne
+import pickle
 
 class PolicyValueNet():
     """policy-value network """
-    def __init__(self, board_width, board_height, net_params=None):
+    def __init__(self, board_width, board_height, model_file=None):
         self.board_width = board_width
         self.board_height = board_height
         self.learning_rate = T.scalar('learning_rate')
         self.l2_const = 1e-4  # coef of l2 penalty 
         self.create_policy_value_net()      
         self._loss_train_op()
-        if net_params:
+        if model_file:
+            try:
+                net_params = pickle.load(open(model_file, 'rb'))
+            except:
+                net_params = pickle.load(open(model_file, 'rb'), encoding = 'bytes')  # To support loading pretrained model in python3            
             lasagne.layers.set_all_param_values([self.policy_net, self.value_net], net_params)            
         
     def create_policy_value_net(self):
@@ -74,3 +81,9 @@ class PolicyValueNet():
     def get_policy_param(self):
         net_params = lasagne.layers.get_all_param_values([self.policy_net, self.value_net])        
         return net_params
+        
+    def save_model(self, model_file):
+        """ save model params to file """
+        net_params = self.get_policy_param() # get model params
+        pickle.dump(net_params, open(model_file, 'wb'), protocol=2)
+        

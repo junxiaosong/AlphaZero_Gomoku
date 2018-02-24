@@ -8,7 +8,6 @@ An implementation of the training pipeline of AlphaZero for Gomoku
 from __future__ import print_function
 import random
 import numpy as np
-import pickle
 from collections import defaultdict, deque
 from game import Board, Game
 from policy_value_net import PolicyValueNet  # Theano and Lasagne
@@ -44,13 +43,11 @@ class TrainPipeline():
         # num of simulations used for the pure mcts, which is used as the opponent to evaluate the trained policy
         self.pure_mcts_playout_num = 1000
         if init_model:
-            # start training from an initial policy-value net
-            policy_param = pickle.load(open(init_model, 'rb'))
-            self.policy_value_net = PolicyValueNet(self.board_width, self.board_height, net_params = policy_param)
-            # best_policy = PolicyValueNet(width, height, model_file='./tf_models/' + init_model) # For Tensorflow
+            # start training from an initial policy-value net            
+            self.policy_value_net = PolicyValueNet(self.board_width, self.board_height, model_file = init_model)
         else:
             # start training from a new policy-value net
-            self.policy_value_net = PolicyValueNet(self.board_width, self.board_height, batch_size=self.batch_size)
+            self.policy_value_net = PolicyValueNet(self.board_width, self.board_height)
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn, c_puct=self.c_puct, n_playout=self.n_playout, is_selfplay=1)
 
     def get_equi_data(self, play_data):
@@ -131,15 +128,12 @@ class TrainPipeline():
                 # check the performance of the current model，and save the model params
                 if (i+1) % self.check_freq == 0:
                     print("current self-play batch: {}".format(i+1))
-                    win_ratio = self.policy_evaluate()
-                    net_params = self.policy_value_net.get_policy_param() # get model params
-                    pickle.dump(net_params, open('current_policy.model', 'wb'), pickle.HIGHEST_PROTOCOL) # save model param to file
-                    # self.policy_value_net.save_model('./tf_models/current_policy.model') # For Tensorflow
+                    win_ratio = self.policy_evaluate()                                        
+                    self.policy_value_net.save_model('./current_policy.model') # save model param to file
                     if win_ratio > self.best_win_ratio:
                         print("New best policy!!!!!!!!")
-                        self.best_win_ratio = win_ratio
-                        pickle.dump(net_params, open('best_policy.model', 'wb'), pickle.HIGHEST_PROTOCOL) # update the best_policy
-                        # self.policy_value_net.save_model('./tf_models/best_policy.model') # For Tensorflow
+                        self.best_win_ratio = win_ratio                        
+                        self.policy_value_net.save_model('./best_policy.model') # update the best_policy
                         if self.best_win_ratio == 1.0 and self.pure_mcts_playout_num < 5000:
                             self.pure_mcts_playout_num += 1000
                             self.best_win_ratio = 0.0
