@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-An implementation of the policyValueNet in PyTorch (tested in PyTorch 0.2.0 and 0.3.0)
+An implementation of the policyValueNet in PyTorch
+Tested in PyTorch 0.2.0 and 0.3.0
 
 @author: Junxiao Song
-""" 
+"""
 
 import torch
 import torch.nn as nn
@@ -13,10 +14,12 @@ from torch.autograd import Variable
 import numpy as np
 import pickle
 
+
 def set_learning_rate(optimizer, lr):
-    """Sets the learning rate to the given value"""    
+    """Sets the learning rate to the given value"""
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
+
 
 class Net(nn.Module):
     """policy-value network module"""
@@ -27,18 +30,19 @@ class Net(nn.Module):
         self.board_height = board_height
         # common layers
         self.conv1 = nn.Conv2d(4, 32, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1) 
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
         # action policy layers
         self.act_conv1 = nn.Conv2d(128, 4, kernel_size=1)
-        self.act_fc1 = nn.Linear(4*board_width*board_height, board_width*board_height)
+        self.act_fc1 = nn.Linear(4*board_width*board_height,
+                                 board_width*board_height)
         # state value layers
         self.val_conv1 = nn.Conv2d(128, 2, kernel_size=1)
         self.val_fc1 = nn.Linear(2*board_width*board_height, 64)
-        self.val_fc2 = nn.Linear(64, 1)         
-    
+        self.val_fc2 = nn.Linear(64, 1)
+
     def forward(self, state_input):
-        # common layers     
+        # common layers
         x = F.relu(self.conv1(state_input))
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
@@ -56,17 +60,19 @@ class Net(nn.Module):
 
 class PolicyValueNet():
     """policy-value network """
-    def __init__(self, board_width, board_height, model_file=None, use_gpu=False):        
+    def __init__(self, board_width, board_height,
+                 model_file=None, use_gpu=False):
         self.use_gpu = use_gpu
         self.board_width = board_width
         self.board_height = board_height
-        self.l2_const = 1e-4  # coef of l2 penalty 
+        self.l2_const = 1e-4  # coef of l2 penalty
         # the policy value net module
         if self.use_gpu:
-            self.policy_value_net = Net(board_width, board_height).cuda()       
+            self.policy_value_net = Net(board_width, board_height).cuda()
         else:
             self.policy_value_net = Net(board_width, board_height)
-        self.optimizer = optim.Adam(self.policy_value_net.parameters(), weight_decay=self.l2_const)
+        self.optimizer = optim.Adam(self.policy_value_net.parameters(),
+                                    weight_decay=self.l2_const)
 
         if model_file:
             net_params = pickle.load(open(model_file, 'rb'))
@@ -75,7 +81,7 @@ class PolicyValueNet():
     def policy_value(self, state_batch):
         """
         input: a batch of states
-        output: a batch of action probabilities and state values 
+        output: a batch of action probabilities and state values
         """
         if self.use_gpu:
             state_batch = Variable(torch.FloatTensor(state_batch).cuda())
@@ -85,23 +91,26 @@ class PolicyValueNet():
         else:
             state_batch = Variable(torch.FloatTensor(state_batch))
             log_act_probs, value = self.policy_value_net(state_batch)
-            act_probs = np.exp(log_act_probs.data.numpy())            
+            act_probs = np.exp(log_act_probs.data.numpy())
             return act_probs, value.data.numpy()
-        
 
     def policy_value_fn(self, board):
         """
         input: board
-        output: a list of (action, probability) tuples for each available action and the score of the board state
+        output: a list of (action, probability) tuples for each available
+        action and the score of the board state
         """
         legal_positions = board.availables
-        current_state = np.ascontiguousarray(board.current_state().reshape(-1, 4, self.board_width, self.board_height))
+        current_state = np.ascontiguousarray(board.current_state().reshape(
+                -1, 4, self.board_width, self.board_height))
         if self.use_gpu:
-            log_act_probs, value = self.policy_value_net(Variable(torch.from_numpy(current_state)).cuda().float())
-            act_probs = np.exp(log_act_probs.data.cpu().numpy().flatten())        
+            log_act_probs, value = self.policy_value_net(
+                    Variable(torch.from_numpy(current_state)).cuda().float())
+            act_probs = np.exp(log_act_probs.data.cpu().numpy().flatten())
         else:
-            log_act_probs, value = self.policy_value_net(Variable(torch.from_numpy(current_state)).float())
-            act_probs = np.exp(log_act_probs.data.numpy().flatten())            
+            log_act_probs, value = self.policy_value_net(
+                    Variable(torch.from_numpy(current_state)).float())
+            act_probs = np.exp(log_act_probs.data.numpy().flatten())
         act_probs = zip(legal_positions, act_probs[legal_positions])
         value = value.data[0][0]
         return act_probs, value
@@ -125,7 +134,8 @@ class PolicyValueNet():
 
         # forward
         log_act_probs, value = self.policy_value_net(state_batch)
-        # define the loss = (z - v)^2 - pi^T * log(p) + c||theta||^2 (Note: the L2 penalty is incorporated in optimizer)
+        # define the loss = (z - v)^2 - pi^T * log(p) + c||theta||^2
+        # Note: the L2 penalty is incorporated in optimizer
         value_loss = F.mse_loss(value.view(-1), winner_batch)
         policy_loss = -torch.mean(torch.sum(mcts_probs*log_act_probs, 1))
         loss = value_loss + policy_loss
@@ -133,7 +143,9 @@ class PolicyValueNet():
         loss.backward()
         self.optimizer.step()
         # calc policy entropy, for monitoring only
-        entropy = -torch.mean(torch.sum(torch.exp(log_act_probs) * log_act_probs, 1))
+        entropy = -torch.mean(
+                torch.sum(torch.exp(log_act_probs) * log_act_probs, 1)
+                )
         return loss.data[0], entropy.data[0]
 
     def get_policy_param(self):
@@ -142,5 +154,5 @@ class PolicyValueNet():
 
     def save_model(self, model_file):
         """ save model params to file """
-        net_params = self.get_policy_param() # get model params
-        pickle.dump(net_params, open(model_file, 'wb'), protocol=2)        
+        net_params = self.get_policy_param()  # get model params
+        pickle.dump(net_params, open(model_file, 'wb'), protocol=2)
