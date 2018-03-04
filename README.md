@@ -5,14 +5,12 @@ References:
 1. AlphaZero: Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm
 2. AlphaGo Zero: Mastering the game of Go without human knowledge
 
-### Update 2018.2.24: now supports training with TensorFlow!
-### Update 2018.1.17: now supports training with PyTorch!
+### Update 2018.2.24: supports training with TensorFlow!
+### Update 2018.1.17: supports training with PyTorch!
 
 ### Example Games Between Trained Models
-- Each move  with 400 playouts:  
+- Each move with 400 MCTS playouts:  
 ![playout400](https://raw.githubusercontent.com/junxiaosong/AlphaZero_Gomoku/master/playout400.gif)
-- Each move  with 800 playouts:  
-![playout800](https://raw.githubusercontent.com/junxiaosong/AlphaZero_Gomoku/master/playout800.gif)
 
 ### Requirements
 To play with the trained AI models, only need:
