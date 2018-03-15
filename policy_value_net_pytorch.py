@@ -12,7 +12,6 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
-import pickle
 
 
 def set_learning_rate(optimizer, lr):
@@ -75,7 +74,7 @@ class PolicyValueNet():
                                     weight_decay=self.l2_const)
 
         if model_file:
-            net_params = pickle.load(open(model_file, 'rb'))
+            net_params = torch.load(model_file)
             self.policy_value_net.load_state_dict(net_params)
 
     def policy_value(self, state_batch):
@@ -155,4 +154,4 @@ class PolicyValueNet():
     def save_model(self, model_file):
         """ save model params to file """
         net_params = self.get_policy_param()  # get model params
-        pickle.dump(net_params, open(model_file, 'wb'), protocol=2)
+        torch.save(net_params, model_file)
