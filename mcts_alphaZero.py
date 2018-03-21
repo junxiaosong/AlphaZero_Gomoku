@@ -203,17 +203,10 @@ class MCTSPlayer(object):
                 # to choosing the move with the highest prob
                 move = np.random.choice(acts, p=probs)
                 # reset the root node
-<<<<<<< HEAD
-                self.mcts.update_with_move(-1)             
-                location = board.move_to_location(move)
-                print("AI move: %d,%d\n" % (location[0], location[1]))
-                
-=======
                 self.mcts.update_with_move(-1)
 #                location = board.move_to_location(move)
 #                print("AI move: %d,%d\n" % (location[0], location[1]))
 
->>>>>>> upstream/master
             if return_prob:
                 return move, move_probs
             else:
