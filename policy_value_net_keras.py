@@ -18,19 +18,21 @@ import keras.backend as K
 from keras.utils import np_utils
 
 import numpy as np
+import pickle
 
 
 class PolicyValueNet():
     """policy-value network """
-    def __init__(self, board_width, board_height, net_params=None):
+    def __init__(self, board_width, board_height, model_file=None):
         self.board_width = board_width
         self.board_height = board_height 
         self.l2_const = 1e-4  # coef of l2 penalty 
         self.create_policy_value_net()   
         self._loss_train_op()
 
-        if net_params:
-            self.model.set_weights(net_params)            
+        if model_file:
+                net_params = pickle.load(open(model_file, 'rb'))
+                self.model.set_weights(net_params)            
         
     def create_policy_value_net(self):
         """create the policy value network """   
@@ -101,3 +103,8 @@ class PolicyValueNet():
     def get_policy_param(self):
         net_params = self.model.get_weights()        
         return net_params
+
+    def save_model(self, model_file):
+        """ save model params to file """
+        net_params = self.get_policy_param()
+        pickle.dump(net_params, open(model_file, 'wb'), protocol=2)
