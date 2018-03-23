@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """
+An implementation of the policyValueNet with Keras
+Tested under Keras 2.0.5 with tensorflow-gpu 1.2.1 as backend
+
 @author: Mingxu Zhang
 """ 
 
@@ -31,23 +34,23 @@ class PolicyValueNet():
         self._loss_train_op()
 
         if model_file:
-                net_params = pickle.load(open(model_file, 'rb'))
-                self.model.set_weights(net_params)            
+            net_params = pickle.load(open(model_file, 'rb'))
+            self.model.set_weights(net_params)
         
     def create_policy_value_net(self):
         """create the policy value network """   
         in_x = network = Input((4, self.board_width, self.board_height))
 
         # conv layers
-        network = Conv2D(filters=32, kernel_size=(3, 3), padding="same", data_format="channels_first", activation="relu", use_bias=False, kernel_regularizer=l2(self.l2_const))(network)
-        network = Conv2D(filters=64, kernel_size=(3, 3), padding="same", data_format="channels_first", activation="relu", use_bias=False, kernel_regularizer=l2(self.l2_const))(network)
-        network = Conv2D(filters=128, kernel_size=(3, 3), padding="same", data_format="channels_first", activation="relu", use_bias=False, kernel_regularizer=l2(self.l2_const))(network)
+        network = Conv2D(filters=32, kernel_size=(3, 3), padding="same", data_format="channels_first", activation="relu", kernel_regularizer=l2(self.l2_const))(network)
+        network = Conv2D(filters=64, kernel_size=(3, 3), padding="same", data_format="channels_first", activation="relu", kernel_regularizer=l2(self.l2_const))(network)
+        network = Conv2D(filters=128, kernel_size=(3, 3), padding="same", data_format="channels_first", activation="relu", kernel_regularizer=l2(self.l2_const))(network)
         # action policy layers
-        policy_net = Conv2D(filters=4, kernel_size=(1, 1), data_format="channels_first", activation="relu", use_bias=False, kernel_regularizer=l2(self.l2_const))(network)
+        policy_net = Conv2D(filters=4, kernel_size=(1, 1), data_format="channels_first", activation="relu", kernel_regularizer=l2(self.l2_const))(network)
         policy_net = Flatten()(policy_net)
         self.policy_net = Dense(self.board_width*self.board_height, activation="softmax", kernel_regularizer=l2(self.l2_const))(policy_net)
         # state value layers
-        value_net = Conv2D(filters=2, kernel_size=(1, 1), data_format="channels_first", activation="relu", use_bias=False, kernel_regularizer=l2(self.l2_const))(network)
+        value_net = Conv2D(filters=2, kernel_size=(1, 1), data_format="channels_first", activation="relu", kernel_regularizer=l2(self.l2_const))(network)
         value_net = Flatten()(value_net)
         value_net = Dense(64, kernel_regularizer=l2(self.l2_const))(value_net)
         self.value_net = Dense(1, activation="tanh", kernel_regularizer=l2(self.l2_const))(value_net)
@@ -68,8 +71,6 @@ class PolicyValueNet():
         legal_positions = board.availables
         current_state = board.current_state()
         act_probs, value = self.policy_value(current_state.reshape(-1, 4, self.board_width, self.board_height))
-        # print('after policy_value:',act_probs, value)
-        # print('==========================')
         act_probs = zip(legal_positions, act_probs.flatten()[legal_positions])
         return act_probs, value[0][0]
 
@@ -91,12 +92,12 @@ class PolicyValueNet():
             state_input_union = np.array(state_input)
             mcts_probs_union = np.array(mcts_probs)
             winner_union = np.array(winner)
-            loss = self.model.evaluate(state_input_union, [mcts_probs_union, winner_union], batch_size=len(state_input))
+            loss = self.model.evaluate(state_input_union, [mcts_probs_union, winner_union], batch_size=len(state_input), verbose=0)
             action_probs, _ = self.model.predict_on_batch(state_input_union)
             entropy = self_entropy(action_probs)
             K.set_value(self.model.optimizer.lr, learning_rate)
-            self.model.fit(state_input_union, [mcts_probs_union, winner_union], batch_size=len(state_input))
-            return loss, entropy
+            self.model.fit(state_input_union, [mcts_probs_union, winner_union], batch_size=len(state_input), verbose=0)
+            return loss[0], entropy
         
         self.train_step = train_step
 
