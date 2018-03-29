@@ -44,12 +44,12 @@ class Board(object):
         return [h, w]
 
     def location_to_move(self, location):
-        if(len(location) != 2):
+        if len(location) != 2:
             return -1
         h = location[0]
         w = location[1]
         move = h * self.width + w
-        if(move not in range(self.width * self.height)):
+        if move not in range(self.width * self.height):
             return -1
         return move
 
@@ -90,7 +90,7 @@ class Board(object):
         n = self.n_in_row
 
         moved = list(set(range(width * height)) - set(self.availables))
-        if(len(moved) < self.n_in_row + 2):
+        if len(moved) < self.n_in_row + 2:
             return False, -1
 
         for m in moved:
@@ -140,24 +140,22 @@ class Game(object):
         width = board.width
         height = board.height
 
-        print("Player", player1, "with X".rjust(3))
-        print("Player", player2, "with O".rjust(3))
-        print()
-        for x in range(width):
-            print("{0:8}".format(x), end='')
-        print('\r\n')
+        screen_text = "Player {} with X\r\nPlayer {} with O\r\n".format(player1, player2)
+
+        screen_text += "".join(["{0:8}".format(x) for x in range(width)]) + "\r\n"
         for i in range(height - 1, -1, -1):
-            print("{0:4d}".format(i), end='')
+            screen_text += "{0:4d}".format(i)
             for j in range(width):
                 loc = i * width + j
                 p = board.states.get(loc, -1)
                 if p == player1:
-                    print('X'.center(8), end='')
+                    screen_text += 'X'.center(8)
                 elif p == player2:
-                    print('O'.center(8), end='')
+                    screen_text += 'O'.center(8)
                 else:
-                    print('_'.center(8), end='')
-            print('\r\n\r\n')
+                    screen_text += '_'.center(8)
+            screen_text += '\r\n\r\n'
+        print(screen_text)
 
     def start_play(self, player1, player2, start_player=0, is_shown=1):
         """start a game between two players"""
@@ -171,7 +169,7 @@ class Game(object):
         players = {p1: player1, p2: player2}
         if is_shown:
             self.graphic(self.board, player1.player, player2.player)
-        while(1):
+        while True:
             current_player = self.board.get_current_player()
             player_in_turn = players[current_player]
             move = player_in_turn.get_action(self.board)
@@ -194,7 +192,7 @@ class Game(object):
         self.board.init_board()
         p1, p2 = self.board.players
         states, mcts_probs, current_players = [], [], []
-        while(1):
+        while True:
             move, move_probs = player.get_action(self.board,
                                                  temp=temp,
                                                  return_prob=1)
