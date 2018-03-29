@@ -140,22 +140,24 @@ class Game(object):
         width = board.width
         height = board.height
 
-        screen_text = "Player {} with X\r\nPlayer {} with O\r\n".format(player1, player2)
-
-        screen_text += "".join(["{0:8}".format(x) for x in range(width)]) + "\r\n"
+        print("Player", player1, "with X".rjust(3))
+        print("Player", player2, "with O".rjust(3))
+        print()
+        for x in range(width):
+            print("{0:8}".format(x), end='')
+        print('\r\n')
         for i in range(height - 1, -1, -1):
-            screen_text += "{0:4d}".format(i)
+            print("{0:4d}".format(i), end='')
             for j in range(width):
                 loc = i * width + j
                 p = board.states.get(loc, -1)
                 if p == player1:
-                    screen_text += 'X'.center(8)
+                    print('X'.center(8), end='')
                 elif p == player2:
-                    screen_text += 'O'.center(8)
+                    print('O'.center(8), end='')
                 else:
-                    screen_text += '_'.center(8)
-            screen_text += '\r\n\r\n'
-        print(screen_text)
+                    print('_'.center(8), end='')
+            print('\r\n\r\n')
 
     def start_play(self, player1, player2, start_player=0, is_shown=1):
         """start a game between two players"""
