@@ -19,21 +19,23 @@ class PolicyValueNet():
         # 1. Input:
         self.input_states = tf.placeholder(
                 tf.float32, shape=[None, 4, board_height, board_width])
-        self.input_states_reshaped = tf.reshape(
-                self.input_states, [-1, board_height, board_width, 4])
         # 2. Common Networks Layers
-        self.conv1 = tf.layers.conv2d(inputs=self.input_states_reshaped,
+        self.conv1 = tf.layers.conv2d(inputs=self.input_states,
                                       filters=32, kernel_size=[3, 3],
-                                      padding="same", activation=tf.nn.relu)
+                                      padding="same", data_format="channels_first",
+                                      activation=tf.nn.relu)
         self.conv2 = tf.layers.conv2d(inputs=self.conv1, filters=64,
                                       kernel_size=[3, 3], padding="same",
+                                      data_format="channels_first",
                                       activation=tf.nn.relu)
         self.conv3 = tf.layers.conv2d(inputs=self.conv2, filters=128,
                                       kernel_size=[3, 3], padding="same",
+                                      data_format="channels_first",
                                       activation=tf.nn.relu)
         # 3-1 Action Networks
         self.action_conv = tf.layers.conv2d(inputs=self.conv3, filters=4,
                                             kernel_size=[1, 1], padding="same",
+                                            data_format="channels_first",
                                             activation=tf.nn.relu)
         # Flatten the tensor
         self.action_conv_flat = tf.reshape(
@@ -47,6 +49,7 @@ class PolicyValueNet():
         self.evaluation_conv = tf.layers.conv2d(inputs=self.conv3, filters=2,
                                                 kernel_size=[1, 1],
                                                 padding="same",
+                                                data_format="channels_first",
                                                 activation=tf.nn.relu)
         self.evaluation_conv_flat = tf.reshape(
                 self.evaluation_conv, [-1, 2 * board_height * board_width])
