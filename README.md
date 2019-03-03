@@ -50,7 +50,7 @@ and uncomment the line
 or
 # from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
 ```
-and then execute: ``python train.py``  (To use GPU in PyTorch, set ``use_gpu=True``)
+and then execute: ``python train.py``  (To use GPU in PyTorch, set ``use_gpu=True`` and use ``return loss.item(), entropy.item()`` in function train_step in policy_value_net_pytorch.py if your pytorch version is greater than 0.5)
 
 The models (best_policy.model and current_policy.model) will be saved every a few updates (default 50).  
 
