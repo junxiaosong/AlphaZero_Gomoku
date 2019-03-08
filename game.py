@@ -90,7 +90,7 @@ class Board(object):
         n = self.n_in_row
 
         moved = list(set(range(width * height)) - set(self.availables))
-        if len(moved) < self.n_in_row + 2:
+        if len(moved) < self.n_in_row *2-1:
             return False, -1
 
         for m in moved:
