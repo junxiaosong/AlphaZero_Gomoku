@@ -22,32 +22,31 @@ parser.add_argument("--data_dir", default=None, type=str, required=True,
                     help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
 # parser.add_argument("--model_type", default=None, type=str, required=True,
 #                     help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
-parser.add_argument("--board_width",
-                default=6,
-                type=int,
-                help="board_width")
-parser.add_argument("--board_height",
-                default=6,
-                type=int,
-                help="board_height")
-parser.add_argument("--n_in_row",
-                default=4,
-                type=int,
-                help="n_in_row")
-parser.add_argument("--learning_rate", default=2e-3, type=float,
-                    help="The initial learning rate for Adam.")
-
-parser.add_argument("--lr_multiplier", default=1.0, type=float,
-                    help="lr_multiplier.")
-parser.add_argument("--n_playout", default=400, type=int,
-                    help="num of simulations for each move.")
-parser.add_argument("--c_puct", default=5, type=int,
-                    help="the temperature param.")
+parser.add_argument("--board_width", default=6,type=int, help="board_width")
+parser.add_argument("--board_height",default=6,type=int,help="board_height")
+parser.add_argument("--n_in_row",default=4,type=int,help="n_in_row")
+parser.add_argument("--learning_rate", default=2e-3, type=float,help="The initial learning rate for Adam.")
+parser.add_argument("--lr_multiplier", default=1.0, type=float,help="lr_multiplier.")
+parser.add_argument("--n_playout", default=400, type=int,help="num of simulations for each move.")
+parser.add_argument("--c_puct", default=5, type=int,help="the temperature param.")
 parser.add_argument("--buffer_size", default=10000, type=int,
                     help="buffer_size.")
 parser.add_argument("--batch_size", default=512, type=int,
                     help="batch_size.")
-
+parser.add_argument("--play_batch_size", default=1, type=int,
+                    help="play_batch_size.")
+parser.add_argument("--epochs", default=5, type=int,
+                    help="epochs.")
+parser.add_argument("--kl_targ", default=0.02, type=float,
+                    help="kl_targ.")
+parser.add_argument("--check_freq", default=50, type=int,
+                    help="check_freq.")
+parser.add_argument("--game_batch_num", default=1500, type=int,
+                    help="game_batch_num.")
+parser.add_argument("--best_win_ratio", default=0.0, type=int,
+                    help="best_win_ratio.")
+parser.add_argument("--pure_mcts_playout_num", default=1000, type=int,
+                    help="pure_mcts_playout_num.")
 
 class TrainPipeline():
     def __init__(self, init_model=None):
