@@ -29,29 +29,20 @@ parser.add_argument("--learning_rate", default=2e-3, type=float,help="The initia
 parser.add_argument("--lr_multiplier", default=1.0, type=float,help="lr_multiplier.")
 parser.add_argument("--n_playout", default=400, type=int,help="num of simulations for each move.")
 parser.add_argument("--c_puct", default=5, type=int,help="the temperature param.")
-parser.add_argument("--buffer_size", default=10000, type=int,
-                    help="buffer_size.")
-parser.add_argument("--batch_size", default=512, type=int,
-                    help="batch_size.")
-parser.add_argument("--play_batch_size", default=1, type=int,
-                    help="play_batch_size.")
-parser.add_argument("--epochs", default=5, type=int,
-                    help="epochs.")
-parser.add_argument("--kl_targ", default=0.02, type=float,
-                    help="kl_targ.")
-parser.add_argument("--check_freq", default=50, type=int,
-                    help="check_freq.")
-parser.add_argument("--game_batch_num", default=1500, type=int,
-                    help="game_batch_num.")
-parser.add_argument("--best_win_ratio", default=0.0, type=int,
-                    help="best_win_ratio.")
-parser.add_argument("--pure_mcts_playout_num", default=1000, type=int,
-                    help="pure_mcts_playout_num.")
+parser.add_argument("--buffer_size", default=10000, type=int,help="buffer_size.")
+parser.add_argument("--batch_size", default=512, type=int,help="batch_size.")
+parser.add_argument("--play_batch_size", default=1, type=int,help="play_batch_size.")
+parser.add_argument("--epochs", default=5, type=int,help="epochs.")
+parser.add_argument("--kl_targ", default=0.02, type=float,help="kl_targ.")
+parser.add_argument("--check_freq", default=50, type=int,help="check_freq.")
+parser.add_argument("--game_batch_num", default=1500, type=int,help="game_batch_num.")
+parser.add_argument("--best_win_ratio", default=0.0, type=int,help="best_win_ratio.")
+parser.add_argument("--pure_mcts_playout_num", default=1000, type=int,help="pure_mcts_playout_num.")
 
 class TrainPipeline():
     def __init__(self, init_model=None):
         # params of the board and the game
-        self.board_width = 6
+        self.board_width = args.board_width
         self.board_height = 6
         self.n_in_row = 4
         self.board = Board(width=self.board_width,
