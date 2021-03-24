@@ -48,7 +48,7 @@ parser.add_argument("--check_freq", default=50, type=int,help="check_freq.")
 parser.add_argument("--game_batch_num", default=1500, type=int,help="game_batch_num.")
 parser.add_argument("--best_win_ratio", default=0.0, type=int,help="best_win_ratio.")
 parser.add_argument("--pure_mcts_playout_num", default=1000, type=int,help="pure_mcts_playout_num.")
-parser.add_argument("--output_dir", default=None, type=str, required=True,
+parser.add_argument("--output_dir", default="./", type=str,
                     help="The output directory where the model predictions and checkpoints will be written.")
 
 args, _ = parser.parse_known_args()
