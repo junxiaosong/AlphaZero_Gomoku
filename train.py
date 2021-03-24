@@ -10,25 +10,35 @@ import random
 import numpy as np
 from collections import defaultdict, deque
 from game import Board, Game
-from mcts_pure import MCTSPlayer as MCTS_Pure
-from mcts_alphaZero import MCTSPlayer
-# from policy_value_net import PolicyValueNet  # Theano and Lasagne
-from policy_value_net_pytorch import PolicyValueNet  # Pytorch
-# from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
-# from policy_value_net_keras import PolicyValueNet # Keras
+from models.mcts_pure import MCTSPlayer as MCTS_Pure
+from models.mcts_alphaZero import MCTSPlayer
+from models.policy_value_net import PolicyValueNet as TheanoPolicyValueNet  # Theano and Lasagne
+from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValueNet # Pytorch
+from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
+from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
+import os
+MODEL_CLASSES = {
+"theano":TheanoPolicyValueNet,
+"pytorch":PytorchPolicyValueNet,
+"tensorflow":TensorflowPolicyValueNet,
+"keras":KerasPolicyValueNet
+}
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--data_dir", default=None, type=str, required=True,
+parser.add_argument("--data_dir", default=None, type=str,
                     help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
-# parser.add_argument("--model_type", default=None, type=str, required=True,
-#                     help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
-parser.add_argument("--board_width", default=6,type=int, help="board_width")
-parser.add_argument("--board_height",default=6,type=int,help="board_height")
-parser.add_argument("--n_in_row",default=4,type=int,help="n_in_row")
-parser.add_argument("--learning_rate", default=2e-3, type=float,help="The initial learning rate for Adam.")
+parser.add_argument("--model_type", default="pytorch", type=str, required=True,
+                    help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
+parser.add_argument("--board_width", default=9,type=int, help="board_width")
+parser.add_argument("--board_height",default=9,type=int,help="board_height")
+parser.add_argument("--n_in_row",default=6,type=int,help="n_in_row")
+parser.add_argument("--learn_rate", default=2e-3, type=float,help="The initial learning rate for Adam.")
 parser.add_argument("--lr_multiplier", default=1.0, type=float,help="lr_multiplier.")
+parser.add_argument("--temp", default=1.0, type=float,help="temp.")
+
 parser.add_argument("--n_playout", default=400, type=int,help="num of simulations for each move.")
 parser.add_argument("--c_puct", default=5, type=int,help="the temperature param.")
+
 parser.add_argument("--buffer_size", default=10000, type=int,help="buffer_size.")
 parser.add_argument("--batch_size", default=512, type=int,help="batch_size.")
 parser.add_argument("--play_batch_size", default=1, type=int,help="play_batch_size.")
@@ -38,43 +48,52 @@ parser.add_argument("--check_freq", default=50, type=int,help="check_freq.")
 parser.add_argument("--game_batch_num", default=1500, type=int,help="game_batch_num.")
 parser.add_argument("--best_win_ratio", default=0.0, type=int,help="best_win_ratio.")
 parser.add_argument("--pure_mcts_playout_num", default=1000, type=int,help="pure_mcts_playout_num.")
+parser.add_argument("--output_dir", default=None, type=str, required=True,
+                    help="The output directory where the model predictions and checkpoints will be written.")
+
+args, _ = parser.parse_known_args()
+print("Print the args:")
+for key, value in sorted(args.__dict__.items()):
+    print("{} = {}".format(key, value))
+
+
 
 class TrainPipeline():
     def __init__(self, init_model=None):
         # params of the board and the game
         self.board_width = args.board_width
-        self.board_height = 6
-        self.n_in_row = 4
+        self.board_height = args.board_height
+        self.n_in_row = args.n_in_row
         self.board = Board(width=self.board_width,
                            height=self.board_height,
                            n_in_row=self.n_in_row)
         self.game = Game(self.board)
         # training params
-        self.learn_rate = 2e-3
-        self.lr_multiplier = 1.0  # adaptively adjust the learning rate based on KL
-        self.temp = 1.0  # the temperature param
-        self.n_playout = 400  # num of simulations for each move
-        self.c_puct = 5
-        self.buffer_size = 10000
-        self.batch_size = 512  # mini-batch size for training
+        self.learn_rate = args.learn_rate
+        self.lr_multiplier = args.lr_multiplier  # adaptively adjust the learning rate based on KL
+        self.temp = args.temp  # the temperature param
+        self.n_playout = args.n_playout  # num of simulations for each move
+        self.c_puct = args.c_puct
+        self.buffer_size = args.buffer_size
+        self.batch_size = args.batch_size  # mini-batch size for training
         self.data_buffer = deque(maxlen=self.buffer_size)
-        self.play_batch_size = 1
-        self.epochs = 5  # num of train_steps for each update
-        self.kl_targ = 0.02
-        self.check_freq = 50
-        self.game_batch_num = 1500
-        self.best_win_ratio = 0.0
+        self.play_batch_size = args.play_batch_size
+        self.epochs = args.epochs  # num of train_steps for each update
+        self.kl_targ = args.kl_targ
+        self.check_freq = args.check_freq
+        self.game_batch_num = args.game_batch_num
+        self.best_win_ratio = args.best_win_ratio
         # num of simulations used for the pure mcts, which is used as
         # the opponent to evaluate the trained policy
-        self.pure_mcts_playout_num = 1000
+        self.pure_mcts_playout_num = args.pure_mcts_playout_num
         if init_model:
             # start training from an initial policy-value net
-            self.policy_value_net = PolicyValueNet(self.board_width,
+            self.policy_value_net = MODEL_CLASSES[args.model_type](self.board_width,
                                                    self.board_height,
                                                    model_file=init_model)
         else:
             # start training from a new policy-value net
-            self.policy_value_net = PolicyValueNet(self.board_width,
+            self.policy_value_net = MODEL_CLASSES[args.model_type](self.board_width,
                                                    self.board_height)
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                       c_puct=self.c_puct,
@@ -197,12 +216,12 @@ class TrainPipeline():
                 if (i+1) % self.check_freq == 0:
                     print("current self-play batch: {}".format(i+1))
                     win_ratio = self.policy_evaluate()
-                    self.policy_value_net.save_model('./current_policy.model')
+                    self.policy_value_net.save_model(os.path.join(args.output_dir, 'current_policy.model'))
                     if win_ratio > self.best_win_ratio:
                         print("New best policy!!!!!!!!")
                         self.best_win_ratio = win_ratio
                         # update the best_policy
-                        self.policy_value_net.save_model('./best_policy.model')
+                        self.policy_value_net.save_model(os.path.join(args.output_dir, 'best_policy.model'))
                         if (self.best_win_ratio == 1.0 and
                                 self.pure_mcts_playout_num < 5000):
                             self.pure_mcts_playout_num += 1000
