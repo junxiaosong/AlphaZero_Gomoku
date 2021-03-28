@@ -36,9 +36,9 @@ parser.add_argument("--board_height",default=9,type=int,help="board_height")
 parser.add_argument("--n_in_row",default=6,type=int,help="n_in_row")
 parser.add_argument("--output_dir", default="./", type=str,
                     help="The output directory where the model predictions and checkpoints will be written.")
-parser.add_argument("--model_file1", default='./current_policy.model', type=str,
+parser.add_argument("--model_file1", default='./best_policy.model', type=str,
                     help="The model_file.")
-parser.add_argument("--model_file2", default='./current_policy.model', type=str,
+parser.add_argument("--model_file2", default='./best_policy.model', type=str,
                     help="The model_file.")
 parser.add_argument("--round_num",default=3,type=int,help="board_height")
 parser.add_argument("--n_playout",default=400,type=int,help="n_playout")

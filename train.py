@@ -27,7 +27,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_dir", default=None, type=str,
                     help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
-parser.add_argument("--model_type", default="pytorch", type=str, required=True,
+parser.add_argument("--model_type", default="pytorch", type=str,
                     help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
 parser.add_argument("--board_width", default=9,type=int, help="board_width")
 parser.add_argument("--board_height",default=9,type=int,help="board_height")
@@ -50,6 +50,9 @@ parser.add_argument("--best_win_ratio", default=0.0, type=int,help="best_win_rat
 parser.add_argument("--pure_mcts_playout_num", default=1000, type=int,help="pure_mcts_playout_num.")
 parser.add_argument("--output_dir", default="./", type=str,
                     help="The output directory where the model predictions and checkpoints will be written.")
+parser.add_argument("--continue_train", action='store_true', help="whether to continue_train")
+parser.add_argument("--model_file", default=None, type=str,
+                    help="The model_file.")
 
 args, _ = parser.parse_known_args()
 print("Print the args:")
@@ -88,11 +91,13 @@ class TrainPipeline():
         self.pure_mcts_playout_num = args.pure_mcts_playout_num
         if init_model:
             # start training from an initial policy-value net
+            print("start training from an initial policy-value net")
             self.policy_value_net = MODEL_CLASSES[args.model_type](self.board_width,
                                                    self.board_height,
                                                    model_file=init_model)
         else:
             # start training from a new policy-value net
+            print("start training from a new policy-value net")
             self.policy_value_net = MODEL_CLASSES[args.model_type](self.board_width,
                                                    self.board_height)
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
@@ -231,5 +236,9 @@ class TrainPipeline():
 
 
 if __name__ == '__main__':
-    training_pipeline = TrainPipeline()
+    if args.continue_train and (args.output_dir is not None and os.path.isfile(os.path.join(args.output_dir,"current_policy.model"))):
+        checkpoint = os.path.join(args.output_dir,"current_policy.model")
+        training_pipeline = TrainPipeline(checkpoint)
+    else:
+        training_pipeline = TrainPipeline(args.model_file)
     training_pipeline.run()

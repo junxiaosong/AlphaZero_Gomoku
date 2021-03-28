@@ -32,7 +32,7 @@ parser.add_argument("--board_height",default=9,type=int,help="board_height")
 parser.add_argument("--n_in_row",default=6,type=int,help="n_in_row")
 parser.add_argument("--output_dir", default=None, type=str,
                     help="The output directory where the model predictions and checkpoints will be written.")
-parser.add_argument("--model_file", default='./current_policy.model', type=str,
+parser.add_argument("--model_file", default='./best_policy.model', type=str,
                     help="The model_file.")
 
 args, _ = parser.parse_known_args()
