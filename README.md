@@ -14,7 +14,7 @@ References:
 
 ### Requirements
 To play with the trained AI models, only need:
-- Python >= 2.7
+- Python >= 3.8
 - Numpy >= 1.11
 
 To train the AI model from scratch, further need, either:
@@ -30,15 +30,21 @@ otherwise, force pip to downgrade Theano to 0.7 ``pip install --upgrade theano==
 If you would like to train the model using other DL frameworks, you only need to rewrite policy_value_net.py.
 
 ### Getting Started
-To play with provided models, run the following script from the directory:  
+To play with provided models, run the following script from the directory.
+Use Numpy:
 ```
-python human_play.py  
+python human_play.py --model_type numpy --board_width 8 --board_height 8 --n_in_row 5 --model_file checkpoint/best_policy_8_8_5.model
+```
+Use TensorFlow:
+```
+python human_play.py --model_type tensorflow --board_width 9 --board_height 9 --n_in_row 5 --model_file output/best_policy.model
 ```
 You may modify human_play.py to try different provided models or the pure MCTS.
 
-To train the AI model from scratch, with Theano and Lasagne, directly run:   
+To train the AI model from scratch, with Theano and Lasagne, directly run:
+Use TensorFlow:
 ```
-python train.py
+python train.py --model_type tensorflow --board_width 9 --board_height 9 --n_in_row 5 --output_dir output --check_freq 200 --game_batch_num 1600
 ```
 With PyTorch or TensorFlow, first modify the file [train.py](https://github.com/junxiaosong/AlphaZero_Gomoku/blob/master/train.py), i.e., comment the line
 ```

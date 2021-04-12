@@ -25,8 +25,6 @@ MODEL_CLASSES = {
 }
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--data_dir", default=None, type=str,
-                    help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
 parser.add_argument("--model_type", default="pytorch", type=str, required=True,
                     help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
 parser.add_argument("--board_width", default=9,type=int, help="board_width")
