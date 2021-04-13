@@ -25,6 +25,8 @@ MODEL_CLASSES = {
 }
 import argparse
 parser = argparse.ArgumentParser()
+parser.add_argument("--data_dir", default=None, type=str,
+                    help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
 parser.add_argument("--model_type", default="pytorch", type=str, required=True,
                     help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
 parser.add_argument("--board_width", default=9,type=int, help="board_width")
@@ -48,6 +50,8 @@ parser.add_argument("--best_win_ratio", default=0.0, type=int,help="best_win_rat
 parser.add_argument("--pure_mcts_playout_num", default=1000, type=int,help="pure_mcts_playout_num.")
 parser.add_argument("--output_dir", default="./", type=str,
                     help="The output directory where the model predictions and checkpoints will be written.")
+parser.add_argument("--ef_for_eight", default=4, type=int,
+                    help="efficient for eight connected region")
 
 args, _ = parser.parse_known_args()
 print("Print the args:")
@@ -96,7 +100,8 @@ class TrainPipeline():
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                       c_puct=self.c_puct,
                                       n_playout=self.n_playout,
-                                      is_selfplay=1)
+                                      is_selfplay=1,
+                                      ef_for_eight=args.ef_for_eight)
 
     def get_equi_data(self, play_data):
         """augment the data set by rotation and flipping
