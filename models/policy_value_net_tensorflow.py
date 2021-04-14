@@ -7,8 +7,7 @@ Tested in Tensorflow 1.4 and 1.5
 """
 
 import numpy as np
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+import tensorflow as tf
 
 
 class PolicyValueNet():
