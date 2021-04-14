@@ -12,16 +12,16 @@ from collections import defaultdict, deque
 from game import Board, Game
 from models.mcts_pure import MCTSPlayer as MCTS_Pure
 from models.mcts_alphaZero import MCTSPlayer
-from models.policy_value_net import PolicyValueNet as TheanoPolicyValueNet  # Theano and Lasagne
+#from models.policy_value_net import PolicyValueNet as TheanoPolicyValueNet  # Theano and Lasagne
 from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValueNet # Pytorch
 from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
-from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
+#from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
 import os
 MODEL_CLASSES = {
-"theano":TheanoPolicyValueNet,
+#"theano":TheanoPolicyValueNet,
 "pytorch":PytorchPolicyValueNet,
-"tensorflow":TensorflowPolicyValueNet,
-"keras":KerasPolicyValueNet
+"tensorflow":TensorflowPolicyValueNet
+#"keras":KerasPolicyValueNet
 }
 import argparse
 parser = argparse.ArgumentParser()

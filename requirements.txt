@@ -1,5 +1,4 @@
 theano>=0.7
-lasagne >=0.1
 keras
 numpy
 tensorflow-gpu==1.15.0
