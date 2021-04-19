@@ -12,16 +12,15 @@ from collections import defaultdict, deque
 from game import Board, Game
 from models.mcts_pure import MCTSPlayer as MCTS_Pure
 from models.mcts_alphaZero import MCTSPlayer
-from models.policy_value_net import PolicyValueNet as TheanoPolicyValueNet  # Theano and Lasagne
 from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValueNet # Pytorch
+from models.policy_value_net_pytorch2 import PolicyValueNet as PytorchPolicyValueNet2 # Pytorch
+
 from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
-from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
 import os
 MODEL_CLASSES = {
-"theano":TheanoPolicyValueNet,
 "pytorch":PytorchPolicyValueNet,
+"pytorch2":PytorchPolicyValueNet2,
 "tensorflow":TensorflowPolicyValueNet,
-"keras":KerasPolicyValueNet
 }
 import argparse
 parser = argparse.ArgumentParser()
@@ -35,10 +34,8 @@ parser.add_argument("--n_in_row",default=6,type=int,help="n_in_row")
 parser.add_argument("--learn_rate", default=2e-3, type=float,help="The initial learning rate for Adam.")
 parser.add_argument("--lr_multiplier", default=1.0, type=float,help="lr_multiplier.")
 parser.add_argument("--temp", default=1.0, type=float,help="temp.")
-
 parser.add_argument("--n_playout", default=400, type=int,help="num of simulations for each move.")
 parser.add_argument("--c_puct", default=5, type=int,help="the temperature param.")
-
 parser.add_argument("--buffer_size", default=10000, type=int,help="buffer_size.")
 parser.add_argument("--batch_size", default=512, type=int,help="batch_size.")
 parser.add_argument("--play_batch_size", default=1, type=int,help="play_batch_size.")
@@ -53,6 +50,7 @@ parser.add_argument("--output_dir", default="./", type=str,
 parser.add_argument("--continue_train", action='store_true', help="whether to continue_train")
 parser.add_argument("--model_file", default=None, type=str,
                     help="The model_file.")
+parser.add_argument("--n_layer_resnet", default=-1, type=int, help="num of simulations for each move.")
 
 args, _ = parser.parse_known_args()
 print("Print the args:")
@@ -92,13 +90,13 @@ class TrainPipeline():
         if init_model:
             # start training from an initial policy-value net
             print("start training from an initial policy-value net")
-            self.policy_value_net = MODEL_CLASSES[args.model_type](self.board_width,
+            self.policy_value_net = MODEL_CLASSES[args.model_type](args, self.board_width,
                                                    self.board_height,
                                                    model_file=init_model)
         else:
             # start training from a new policy-value net
             print("start training from a new policy-value net")
-            self.policy_value_net = MODEL_CLASSES[args.model_type](self.board_width,
+            self.policy_value_net = MODEL_CLASSES[args.model_type](args, self.board_width,
                                                    self.board_height)
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                       c_puct=self.c_puct,

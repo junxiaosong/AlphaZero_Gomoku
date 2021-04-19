@@ -12,7 +12,36 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
+class ResBlock(nn.Module):
+    def __init__(self, inplanes=128, planes=128, stride=1, downsample=None):
+        super(ResBlock, self).__init__()
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride,
+                     padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
+                     padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
 
+    def forward(self, x):
+        residual = x
+        out = self.conv1(x)
+        out = F.relu(self.bn1(out))
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out += residual
+        out = F.relu(out)
+        return out
+
+class ConnectNet(nn.Module):
+    def __init__(self):
+        super(ConnectNet, self).__init__()
+        for block in range(19):
+            setattr(self, "res_%i" % block, ResBlock())
+
+    def forward(self, s):
+        for block in range(19):
+            s = getattr(self, "res_%i" % block)(s)
+        return s
 
 def set_learning_rate(optimizer, lr):
     """Sets the learning rate to the given value"""
@@ -24,13 +53,19 @@ class Net(nn.Module):
     """policy-value network module"""
     def __init__(self, args, board_width, board_height):
         super(Net, self).__init__()
-
+        self.args = args
         self.board_width = board_width
         self.board_height = board_height
         # common layers
         self.conv1 = nn.Conv2d(4, 32, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+
+        if args.n_layer_resnet != -1:
+            for block in range(args.n_layer_resnet):
+                setattr(self, "res_%i" % block, ResBlock())
+        # self.conv4 = nn.Conv2d(128, 128, kernel_size=3, padding=1)
+
         # action policy layers
         self.act_conv1 = nn.Conv2d(128, 4, kernel_size=1)
         self.act_fc1 = nn.Linear(4*board_width*board_height,
@@ -45,6 +80,10 @@ class Net(nn.Module):
         x = F.relu(self.conv1(state_input))
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
+        if self.args.n_layer_resnet != -1:
+            for block in range(self.args.n_layer_resnet):
+                x = getattr(self, "res_%i" % block)(x)
+        # x = F.relu(self.conv4(x))
         # action policy layers
         x_act = F.relu(self.act_conv1(x))
         x_act = x_act.view(-1, 4*self.board_width*self.board_height)

@@ -10,20 +10,18 @@ from __future__ import print_function
 from game import Board, Game
 from models.mcts_alphaZero import MCTSPlayer
 from models.policy_value_net_numpy import PolicyValueNetNumpy
-from models.policy_value_net import PolicyValueNet as TheanoPolicyValueNet  # Theano and Lasagne
 from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValueNet # Pytorch
-from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
-from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
+# from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
+from models.policy_value_net_pytorch2 import PolicyValueNet as PytorchPolicyValueNet2 # Pytorch
 import pickle
 import random
 import os
 import json
 MODEL_CLASSES = {
 "numpy":PolicyValueNetNumpy,
-"theano":TheanoPolicyValueNet,
 "pytorch":PytorchPolicyValueNet,
-"tensorflow":TensorflowPolicyValueNet,
-"keras":KerasPolicyValueNet
+"pytorch2":PytorchPolicyValueNet2,
+# "tensorflow":TensorflowPolicyValueNet,
 }
 import argparse
 parser = argparse.ArgumentParser()
@@ -40,8 +38,9 @@ parser.add_argument("--model_file1", default='./best_policy.model', type=str,
                     help="The model_file.")
 parser.add_argument("--model_file2", default='./best_policy.model', type=str,
                     help="The model_file.")
-parser.add_argument("--round_num",default=3,type=int,help="board_height")
+parser.add_argument("--round_num",default=1,type=int,help="board_height")
 parser.add_argument("--n_playout",default=400,type=int,help="n_playout")
+parser.add_argument("--n_layer_resnet", default=-1, type=int, help="num of simulations for each move.")
 
 
 args, _ = parser.parse_known_args()
@@ -81,9 +80,9 @@ def get_mcts_player(model_type, model_file, width, height):
         policy_param = pickle.load(open(model_file, 'rb'),
                                    encoding='bytes')  # To support python3
 
-        best_policy = MODEL_CLASSES[model_type](width, height, policy_param)
+        best_policy = MODEL_CLASSES[model_type](args, width, height, policy_param)
     else:
-        best_policy = MODEL_CLASSES[model_type](width, height, model_file)
+        best_policy = MODEL_CLASSES[model_type](args, width, height, model_file)
     mcts_player = MCTSPlayer(best_policy.policy_value_fn,
                              c_puct=5,
                              n_playout=args.n_playout)  # set larger n_playout for better performance
