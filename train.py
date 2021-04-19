@@ -127,7 +127,9 @@ class TrainPipeline():
 
     def collect_selfplay_data(self, n_games=1):
         """collect self-play data for training"""
+        print("~~~~~~~~~~~~~~~ start self play ~~~~~~~~~~~~~~~~~~~~~~")
         for i in range(n_games):
+            print("~~~~~~~~~~~~~~~~~ self play round {} ~~~~~~~~~~~~~~~~~~~".format(i))
             winner, play_data = self.game.start_self_play(self.mcts_player,
                                                           temp=self.temp)
             play_data = list(play_data)[:]

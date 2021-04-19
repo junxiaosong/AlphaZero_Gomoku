@@ -102,8 +102,11 @@ def run():
         if winner not in winner_dict:
             winner_dict[winner] = 0
         winner_dict[winner] += 1
+    print("output winner dict to {}".format(os.path.join(args.output_dir, "winner_dict.tsv")))
     with open(os.path.join(args.output_dir, "winner_dict.tsv"), 'w', encoding='utf8') as fout:
         fout.write(json.dumps(winner_dict))
+    print("winner dict:")
+    print(winner_dict)
 
 if __name__ == '__main__':
     if not os.path.exists(args.output_dir):
