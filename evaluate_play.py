@@ -11,7 +11,7 @@ from game import Board, Game
 from models.mcts_alphaZero import MCTSPlayer
 from models.policy_value_net_numpy import PolicyValueNetNumpy
 from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValueNet # Pytorch
-# from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
+from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
 from models.policy_value_net_pytorch2 import PolicyValueNet as PytorchPolicyValueNet2 # Pytorch
 import pickle
 import random
@@ -21,7 +21,7 @@ MODEL_CLASSES = {
 "numpy":PolicyValueNetNumpy,
 "pytorch":PytorchPolicyValueNet,
 "pytorch2":PytorchPolicyValueNet2,
-# "tensorflow":TensorflowPolicyValueNet,
+"tensorflow":TensorflowPolicyValueNet,
 }
 import argparse
 parser = argparse.ArgumentParser()
