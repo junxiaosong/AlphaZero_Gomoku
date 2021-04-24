@@ -10,7 +10,7 @@ from __future__ import print_function
 from game import Board, Game
 from models.mcts_alphaZero import MCTSPlayer
 from models.policy_value_net_numpy import PolicyValueNetNumpy
-#from models.policy_value_net_tensorflow import PolicyValueNet as TheanoPolicyValueNet  # Theano and Lasagne
+#from models.policy_value_net import PolicyValueNet as TheanoPolicyValueNet  # Theano and Lasagne
 from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValueNet # Pytorch
 from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
 #from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
@@ -29,9 +29,9 @@ parser.add_argument("--model_type", default="pytorch", type=str,
                     help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
 parser.add_argument("--board_width", default=9,type=int, help="board_width")
 parser.add_argument("--board_height",default=9,type=int,help="board_height")
+parser.add_argument("--n_in_row",default=5,type=int,help="n_in_row")
 parser.add_argument("--output_dir", default=None, type=str,
                     help="The output directory where the model predictions and checkpoints will be written.")
-parser.add_argument("--n_in_row",default=5,type=int,help="n_in_row")
 parser.add_argument("--model_file", default='./current_policy.model', type=str,
                     help="The model_file.")
 
