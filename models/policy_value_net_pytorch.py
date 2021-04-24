@@ -101,7 +101,7 @@ class PolicyValueNet():
         action and the score of the board state
         """
         # the first two move is random
-        if len(board.moved) <= 2:
+        if len(board.moved) <= 2 or board._ef_for_eight <= 0:
                 legal_positions = board.availables
         else:
                 legal_positions = board.eight_connected_region_to_moved

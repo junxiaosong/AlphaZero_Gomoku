@@ -44,7 +44,7 @@ You may modify human_play.py to try different provided models or the pure MCTS.
 To train the AI model from scratch, with Theano and Lasagne, directly run:
 Use TensorFlow:
 ```
-python train.py --model_type tensorflow --board_width 9 --board_height 9 --n_in_row 5 --output_dir output --check_freq 200 --game_batch_num 3000 --ef_for_eight 4
+python train.py --model_type tensorflow --board_width 9 --board_height 9 --n_in_row 5 --output_dir output --check_freq 200 --game_batch_num 4000 --ef_for_eight 4
 ```
 With PyTorch or TensorFlow, first modify the file [train.py](https://github.com/junxiaosong/AlphaZero_Gomoku/blob/master/train.py), i.e., comment the line
 ```

@@ -19,6 +19,7 @@ class Board(object):
         self.states = {}
         # need how many pieces in a row to win
         self.n_in_row = int(kwargs.get('n_in_row', 5))
+        self._ef_for_eight = int(kwargs.get('ef_for_eight', -1))
         self.players = [1, 2]  # player1 and player2
 
     def init_board(self, start_player=0):

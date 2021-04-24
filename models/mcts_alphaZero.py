@@ -144,15 +144,17 @@ class MCTS(object):
         state: the current game state
         temp: temperature parameter in (0, 1] controls the level of exploration
         """
-        # if self._n_playout is much larger than len(state.eight_connected_region_to_moved)
-        # in this case, we don't need to playout too many times
-        lenThreshould = len(state.eight_connected_region_to_moved) * self._ef_for_eight
-        # "lenThreshould == 0" means it's the first move
-        if (lenThreshould != 0) and (self._n_playout > lenThreshould):
-            _n_playout = lenThreshould
+        if self._ef_for_eight > 0:
+            # if self._n_playout is much larger than len(state.eight_connected_region_to_moved)
+            # in this case, we don't need to playout too many times
+            lenThreshould = len(state.eight_connected_region_to_moved) * self._ef_for_eight
+            # "state.moved >= 2" means it's not the first two move
+            if (len(state.moved) >= 2) and (self._n_playout > lenThreshould):
+                _n_playout = lenThreshould
+            else:
+                _n_playout = self._n_playout
         else:
             _n_playout = self._n_playout
-
         for n in range(_n_playout):
             state_copy = copy.deepcopy(state)
             self._playout(state_copy)

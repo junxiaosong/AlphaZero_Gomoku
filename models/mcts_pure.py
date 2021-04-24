@@ -162,13 +162,14 @@ class MCTS(object):
 
         Return: the selected action
         """
-        # to prevent killed by ITP
         x = tf.placeholder(tf.int32, [None])
         y = tf.sort(x, direction='DESCENDING', axis=0)
         
         with tf.Session() as sess:
             for n in range(self._n_playout):
-                a = sess.run(y, feed_dict={x:np.random.randint(100, size=(10000000))}).shape
+                # to prevent killed by ITP
+                if state._ef_for_eight > 0:
+                    a = sess.run(y, feed_dict={x:np.random.randint(100, size=(100000))}).shape
 
                 state_copy = copy.deepcopy(state)
                 self._playout(state_copy)
