@@ -50,7 +50,7 @@ parser.add_argument("--best_win_ratio", default=0.0, type=int,help="best_win_rat
 parser.add_argument("--pure_mcts_playout_num", default=1000, type=int,help="pure_mcts_playout_num.")
 parser.add_argument("--output_dir", default="./", type=str,
                     help="The output directory where the model predictions and checkpoints will be written.")
-parser.add_argument("--ef_for_eight", default=4, type=int,
+parser.add_argument("--ef_for_eight", default=-1, type=int,
                     help="efficient for eight connected region, <=0 to disable it")
 
 args, _ = parser.parse_known_args()

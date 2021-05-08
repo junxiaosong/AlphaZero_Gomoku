@@ -106,16 +106,17 @@ class Board(object):
         self.states[move] = self.current_player
         self.availables.remove(move)
 
-        # get 8 connected region to moved
-        # this even works in playout, while policy network return appendEightConnectedRegion
-        # from virtual board, and this board will update it's appendEightConnectedRegion
-        # after each virtual move
-        self.moved.append(move)
-        self.appendEightConnectedRegion(move)
-        # remove moved
-        for temp_move in self.moved:
-            if temp_move in self.eight_connected_region_to_moved:
-                self.eight_connected_region_to_moved.remove(temp_move)
+        if self._ef_for_eight > 0:
+            # get 8 connected region to moved
+            # this even works in playout, while policy network return appendEightConnectedRegion
+            # from virtual board, and this board will update it's appendEightConnectedRegion
+            # after each virtual move
+            self.moved.append(move)
+            self.appendEightConnectedRegion(move)
+            # remove moved
+            for temp_move in self.moved:
+                if temp_move in self.eight_connected_region_to_moved:
+                    self.eight_connected_region_to_moved.remove(temp_move)
         self.current_player = (
             self.players[0] if self.current_player == self.players[1]
             else self.players[1]
