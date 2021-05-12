@@ -167,7 +167,7 @@ class TrainPipeline():
 
         with open(output_file,'a+') as scoreRecord:
             scoreRecord.write(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S "))
-            scoreRecord.write(output)
+            scoreRecord.write(output+'\n')
         print(output)
         return win_ratio
 
