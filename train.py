@@ -140,7 +140,7 @@ class TrainPipeline():
                         explained_var_new))
         return loss, entropy
 
-    def policy_evaluate(self, current_batch, currentn_games=100):
+    def policy_evaluate(self, current_batch, output_dir, n_games=100):
         """
         Evaluate the trained policy by playing against the pure MCTS player
         Note: this is only for monitoring the progress of training
@@ -158,7 +158,8 @@ class TrainPipeline():
                                           is_shown=0)
             win_cnt[winner] += 1
         win_ratio = 1.0*(win_cnt[1] + 0.5*win_cnt[-1]) / n_games
-        output_file = "output_" + datetime.utcnow().strftime("%Y%m%d%H%M%S") + ".txt"
+        
+        output_file = output_dir + "/score.txt"
         output = "current self play batch: {}, num_playouts: {}, win: {}, lose: {}, tie: {}, win ratio: {}".format(
                 current_batch,
                 self.pure_mcts_playout_num,
@@ -173,6 +174,11 @@ class TrainPipeline():
     def run(self):
         """run the training pipeline"""
         try:
+            import os
+            output_dir = "output/" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+
             for i in range(self.game_batch_num):
                 self.collect_selfplay_data(self.play_batch_size)
                 print("batch i:{}, episode_len:{}".format(
@@ -183,13 +189,13 @@ class TrainPipeline():
                 # and save the model params
                 if (i+1) % self.check_freq == 0:
                     print("current self-play batch: {}".format(i+1))
-                    win_ratio = self.policy_evaluate(current_batch=i+1)
-                    self.policy_value_net.save_model('./current_policy.model')
+                    win_ratio = self.policy_evaluate(current_batch=i+1, output_dir=output_dir)
+                    self.policy_value_net.save_model(output_dir+'/current_policy.model')
                     if win_ratio > self.best_win_ratio:
                         print("New best policy!!!!!!!!")
                         self.best_win_ratio = win_ratio
                         # update the best_policy
-                        self.policy_value_net.save_model('./best_policy.model')
+                        self.policy_value_net.save_model(output_dir+'/best_policy.model')
                         if (self.best_win_ratio == 1.0 and
                                 self.pure_mcts_playout_num < 5000):
                             self.pure_mcts_playout_num += 1000
