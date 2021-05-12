@@ -17,6 +17,7 @@ from mcts_alphaZero import MCTSPlayer
 from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
 # from policy_value_net_keras import PolicyValueNet # Keras
 
+from datetime import datetime
 
 class TrainPipeline():
     def __init__(self, init_model=None):
@@ -139,7 +140,7 @@ class TrainPipeline():
                         explained_var_new))
         return loss, entropy
 
-    def policy_evaluate(self, n_games=100):
+    def policy_evaluate(self, current_batch, currentn_games=100):
         """
         Evaluate the trained policy by playing against the pure MCTS player
         Note: this is only for monitoring the progress of training
@@ -157,9 +158,16 @@ class TrainPipeline():
                                           is_shown=0)
             win_cnt[winner] += 1
         win_ratio = 1.0*(win_cnt[1] + 0.5*win_cnt[-1]) / n_games
-        print("num_playouts:{}, win: {}, lose: {}, tie:{}".format(
+        output_file = "output_" + datetime.utcnow().strftime("%Y%m%d%H%M%S") + ".txt"
+        output = "current self play batch: {}, num_playouts: {}, win: {}, lose: {}, tie: {}, win ratio: {}".format(
+                current_batch,
                 self.pure_mcts_playout_num,
-                win_cnt[1], win_cnt[2], win_cnt[-1]))
+                win_cnt[1], win_cnt[2], win_cnt[-1], win_ratio)
+
+        with open(output_file,'a+') as scoreRecord:
+            scoreRecord.write(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S "))
+            scoreRecord.write(output)
+        print(output)
         return win_ratio
 
     def run(self):
@@ -175,7 +183,7 @@ class TrainPipeline():
                 # and save the model params
                 if (i+1) % self.check_freq == 0:
                     print("current self-play batch: {}".format(i+1))
-                    win_ratio = self.policy_evaluate()
+                    win_ratio = self.policy_evaluate(current_batch=i+1)
                     self.policy_value_net.save_model('./current_policy.model')
                     if win_ratio > self.best_win_ratio:
                         print("New best policy!!!!!!!!")
