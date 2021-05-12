@@ -102,9 +102,9 @@ class PolicyValueNet():
 
     def _block(self, x, n_out, n, is_training, scope="block"):
         with tf.variable_scope(scope):
-            out = self._bottleneck(x, n_out, is_training, scope="bottlencek1")
+            out = self._bottleneck(x, n_out, is_training, scope="bottleneck1")
             for i in range(1, n):
-                out = self._bottleneck(out, n_out, is_training, scope=("bottlencek%s" % (i + 1)))
+                out = self._bottleneck(out, n_out, is_training, scope=("bottleneck%s" % (i + 1)))
             return out
 
     def _bottleneck(self, x, n_out, is_training, scope="bottleneck"):
@@ -125,8 +125,8 @@ class PolicyValueNet():
                 shortcut = tf.layers.conv2d(inputs=x, filters=n_out, kernel_size=[1, 1], padding="same", data_format="channels_last", activation=None)
                 shortcut = self._batch_norm(shortcut, is_training, scope="bn_4")
             else:
-                shortcut = x
-            return tf.nn.relu(shortcut + h)
+                shortcut = self._batch_norm(x, is_training, scope="bn_4")
+            return tf.nn.relu(self._batch_norm(shortcut + h, is_training, scope="bn_5"))
             
     def policy_value(self, state_batch):
         """
