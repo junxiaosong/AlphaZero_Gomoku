@@ -60,7 +60,7 @@ class Net(nn.Module):
 class PolicyValueNet():
     """policy-value network """
     def __init__(self, args, board_width, board_height,
-                 model_file=None, use_gpu=True):
+                 model_file=None, use_gpu=False):
         self.use_gpu = use_gpu
         self.board_width = board_width
         self.board_height = board_height
@@ -75,7 +75,7 @@ class PolicyValueNet():
                                     weight_decay=self.l2_const)
 
         if model_file:
-            net_params = torch.load(model_file)
+            net_params = torch.load(model_file,map_location=torch.device('cpu'))
             self.policy_value_net.load_state_dict(net_params)
 
     def policy_value(self, state_batch):

@@ -17,6 +17,8 @@ import pickle
 import random
 import os
 import json
+import os
+
 MODEL_CLASSES = {
 "numpy":PolicyValueNetNumpy,
 "pytorch":PytorchPolicyValueNet,
@@ -97,7 +99,7 @@ def run():
     mcts2 = get_mcts_player(args.model_type2, args.model_file2, width, height)
     winner_dict = dict()
     for i in range(0, args.round_num):
-        start_player =1 if random.random() > 0.5 else 0
+        start_player = 1 if i * 1.0 % 2 == 0 else 0
         winner = game.start_play(mcts1, mcts2, start_player=start_player, is_shown=1)
         if winner not in winner_dict:
             winner_dict[winner] = 0
