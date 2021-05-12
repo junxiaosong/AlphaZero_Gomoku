@@ -12,9 +12,9 @@ from collections import defaultdict, deque
 from game import Board, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
-from policy_value_net import PolicyValueNet  # Theano and Lasagne
+#from policy_value_net import PolicyValueNet  # Theano and Lasagne
 # from policy_value_net_pytorch import PolicyValueNet  # Pytorch
-# from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
+from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
 # from policy_value_net_keras import PolicyValueNet # Keras
 
 
@@ -35,13 +35,13 @@ class TrainPipeline():
         self.n_playout = 400  # num of simulations for each move
         self.c_puct = 5
         self.buffer_size = 10000
-        self.batch_size = 512  # mini-batch size for training
+        self.batch_size = 64  # mini-batch size for training
         self.data_buffer = deque(maxlen=self.buffer_size)
         self.play_batch_size = 1
         self.epochs = 5  # num of train_steps for each update
         self.kl_targ = 0.02
         self.check_freq = 50
-        self.game_batch_num = 1500
+        self.game_batch_num = 150
         self.best_win_ratio = 0.0
         # num of simulations used for the pure mcts, which is used as
         # the opponent to evaluate the trained policy
@@ -139,7 +139,7 @@ class TrainPipeline():
                         explained_var_new))
         return loss, entropy
 
-    def policy_evaluate(self, n_games=10):
+    def policy_evaluate(self, n_games=100):
         """
         Evaluate the trained policy by playing against the pure MCTS player
         Note: this is only for monitoring the progress of training
