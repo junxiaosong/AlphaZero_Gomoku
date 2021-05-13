@@ -98,7 +98,10 @@ class PolicyValueNet():
             self.restore_model(model_file)
 
     def _batch_norm(self, x, is_training, scope="bn"):
-        return batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None, is_training=is_training, reuse=None, trainable=True, scope=scope)
+        if is_training:
+            return batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None, is_training=True, reuse=None, trainable=True, scope=scope)
+        else:
+            return batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None, is_training=False, reuse=True, trainable=False, scope=scope)
 
     def _block(self, x, n_out, n, is_training, scope="block"):
         with tf.variable_scope(scope):
