@@ -20,8 +20,9 @@ import os
 MODEL_CLASSES = {
 "pytorch":PytorchPolicyValueNet,
 "pytorch2":PytorchPolicyValueNet2,
-"tensorflow":TensorflowPolicyValueNet,
+"tensorflow":TensorflowPolicyValueNet
 }
+#from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_dir", default=None, type=str,
@@ -51,6 +52,8 @@ parser.add_argument("--continue_train", action='store_true', help="whether to co
 parser.add_argument("--model_file", default=None, type=str,
                     help="The model_file.")
 parser.add_argument("--n_layer_resnet", default=-1, type=int, help="num of simulations for each move.")
+parser.add_argument("--ef_for_eight", default=-1, type=int,
+                    help="efficient for eight connected region, <=0 to disable it")
 
 args, _ = parser.parse_known_args()
 print("Print the args:")
@@ -67,7 +70,8 @@ class TrainPipeline():
         self.n_in_row = args.n_in_row
         self.board = Board(width=self.board_width,
                            height=self.board_height,
-                           n_in_row=self.n_in_row)
+                           n_in_row=self.n_in_row,
+                           ef_for_eight=args.ef_for_eight)
         self.game = Game(self.board)
         # training params
         self.learn_rate = args.learn_rate
@@ -101,7 +105,8 @@ class TrainPipeline():
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                       c_puct=self.c_puct,
                                       n_playout=self.n_playout,
-                                      is_selfplay=1)
+                                      is_selfplay=1,
+                                      ef_for_eight=args.ef_for_eight)
 
     def get_equi_data(self, play_data):
         """augment the data set by rotation and flipping
@@ -191,7 +196,8 @@ class TrainPipeline():
         """
         current_mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                          c_puct=self.c_puct,
-                                         n_playout=self.n_playout)
+                                         n_playout=self.n_playout,
+                                         ef_for_eight=args.ef_for_eight)
         pure_mcts_player = MCTS_Pure(c_puct=5,
                                      n_playout=self.pure_mcts_playout_num)
         win_cnt = defaultdict(int)

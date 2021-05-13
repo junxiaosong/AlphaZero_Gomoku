@@ -1,3 +1,5 @@
+theano>=0.7
+keras
 numpy
 tensorflow-gpu==1.15.0
 torch >= 1.2

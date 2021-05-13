@@ -10,16 +10,16 @@ from __future__ import print_function
 from game import Board, Game
 from models.mcts_alphaZero import MCTSPlayer
 from models.policy_value_net_numpy import PolicyValueNetNumpy
-from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValueNet # Pytorch
-# from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
 from models.policy_value_net_pytorch2 import PolicyValueNet as PytorchPolicyValueNet2 # Pytorch
+from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValueNet # Pytorch
+from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
 import pickle
 import os
 MODEL_CLASSES = {
 "numpy":PolicyValueNetNumpy,
 "pytorch":PytorchPolicyValueNet,
 "pytorch2":PytorchPolicyValueNet2,
-# "tensorflow":TensorflowPolicyValueNet,
+"tensorflow":TensorflowPolicyValueNet
 }
 import argparse
 parser = argparse.ArgumentParser()
@@ -27,7 +27,7 @@ parser.add_argument("--model_type", default="pytorch", type=str,
                     help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
 parser.add_argument("--board_width", default=9,type=int, help="board_width")
 parser.add_argument("--board_height",default=9,type=int,help="board_height")
-parser.add_argument("--n_in_row",default=6,type=int,help="n_in_row")
+parser.add_argument("--n_in_row",default=5,type=int,help="n_in_row")
 parser.add_argument("--output_dir", default=None, type=str,
                     help="The output directory where the model predictions and checkpoints will be written.")
 parser.add_argument("--model_file", default='./best_policy.model', type=str,
