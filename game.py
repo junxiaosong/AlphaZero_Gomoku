@@ -5,7 +5,7 @@
 
 from __future__ import print_function
 import numpy as np
-
+import random
 
 class Board(object):
     """board for the game"""
@@ -234,6 +234,69 @@ class Game(object):
         self.board.init_board()
         p1, p2 = self.board.players
         states, mcts_probs, current_players = [], [], []
+        while True:
+            move, move_probs = player.get_action(self.board,
+                                                 temp=temp,
+                                                 return_prob=1)
+            # store the data
+            states.append(self.board.current_state())
+            mcts_probs.append(move_probs)
+            current_players.append(self.board.current_player)
+            # perform a move
+            self.board.do_move(move)
+            if is_shown:
+                self.graphic(self.board, p1, p2)
+            end, winner = self.board.game_end()
+            if end:
+                # winner from the perspective of the current player of each state
+                winners_z = np.zeros(len(current_players))
+                if winner != -1:
+                    winners_z[np.array(current_players) == winner] = 1.0
+                    winners_z[np.array(current_players) != winner] = -1.0
+                # reset MCTS root node
+                player.reset_player()
+                if is_shown:
+                    if winner != -1:
+                        print("Game end. Winner is player:", winner)
+                    else:
+                        print("Game end. Tie")
+                return winner, zip(states, mcts_probs, winners_z)
+    def start_self_play_random(self, player, is_shown=0, temp=1e-3):
+        self.board.init_board()
+        p1, p2 = self.board.players
+        states, mcts_probs, current_players = [], [], []
+        move_list = [item for item in (self.board.width*self.board.height)]
+        if random.random() < 0.1:
+            while True:
+                move_blank = random.choice(move_list)
+                move_white = random.choice(move_list)
+                if move_blank != move_white:
+                    break
+            # store the data
+            probs = [0.000001 for _ in range(self.board.width*self.board.height)]
+            probs[move_blank] = 0.99999
+            move_blank_probs = np.asarray(probs)
+
+            states.append(self.board.current_state())
+            mcts_probs.append(move_blank_probs)
+            current_players.append(self.board.current_player)
+            # perform a move
+            self.board.do_move(move_blank)
+            if is_shown:
+                self.graphic(self.board, p1, p2)
+
+            probs_ = [0.000001 for _ in range(self.board.width*self.board.height)]
+            probs_[move_white] = 0.99999
+            move_white_probs = np.asarray(probs_)
+
+            states.append(self.board.current_state())
+            mcts_probs.append(move_white_probs)
+            current_players.append(self.board.current_player)
+            # perform a move
+            self.board.do_move(move_white)
+            if is_shown:
+                self.graphic(self.board, p1, p2)
+
         while True:
             move, move_probs = player.get_action(self.board,
                                                  temp=temp,
