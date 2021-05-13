@@ -12,16 +12,16 @@ from collections import defaultdict, deque
 from game import Board, Game
 from models.mcts_pure import MCTSPlayer as MCTS_Pure
 from models.mcts_alphaZero import MCTSPlayer
-from models.policy_value_net import PolicyValueNet as TheanoPolicyValueNet  # Theano and Lasagne
+#from models.policy_value_net import PolicyValueNet as TheanoPolicyValueNet  # Theano and Lasagne
 from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValueNet # Pytorch
 from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
-from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
+#from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
 import os
 MODEL_CLASSES = {
-"theano":TheanoPolicyValueNet,
+#"theano":TheanoPolicyValueNet,
 "pytorch":PytorchPolicyValueNet,
-"tensorflow":TensorflowPolicyValueNet,
-"keras":KerasPolicyValueNet
+"tensorflow":TensorflowPolicyValueNet
+#"keras":KerasPolicyValueNet
 }
 import argparse
 parser = argparse.ArgumentParser()
@@ -50,6 +50,8 @@ parser.add_argument("--best_win_ratio", default=0.0, type=int,help="best_win_rat
 parser.add_argument("--pure_mcts_playout_num", default=1000, type=int,help="pure_mcts_playout_num.")
 parser.add_argument("--output_dir", default="./", type=str,
                     help="The output directory where the model predictions and checkpoints will be written.")
+parser.add_argument("--ef_for_eight", default=-1, type=int,
+                    help="efficient for eight connected region, <=0 to disable it")
 
 args, _ = parser.parse_known_args()
 print("Print the args:")
@@ -66,7 +68,8 @@ class TrainPipeline():
         self.n_in_row = args.n_in_row
         self.board = Board(width=self.board_width,
                            height=self.board_height,
-                           n_in_row=self.n_in_row)
+                           n_in_row=self.n_in_row,
+                           ef_for_eight=args.ef_for_eight)
         self.game = Game(self.board)
         # training params
         self.learn_rate = args.learn_rate
@@ -98,7 +101,8 @@ class TrainPipeline():
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                       c_puct=self.c_puct,
                                       n_playout=self.n_playout,
-                                      is_selfplay=1)
+                                      is_selfplay=1,
+                                      ef_for_eight=args.ef_for_eight)
 
     def get_equi_data(self, play_data):
         """augment the data set by rotation and flipping
@@ -186,7 +190,8 @@ class TrainPipeline():
         """
         current_mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                          c_puct=self.c_puct,
-                                         n_playout=self.n_playout)
+                                         n_playout=self.n_playout,
+                                         ef_for_eight=args.ef_for_eight)
         pure_mcts_player = MCTS_Pure(c_puct=5,
                                      n_playout=self.pure_mcts_playout_num)
         win_cnt = defaultdict(int)

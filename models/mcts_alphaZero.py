@@ -88,7 +88,7 @@ class TreeNode(object):
 class MCTS(object):
     """An implementation of Monte Carlo Tree Search."""
 
-    def __init__(self, policy_value_fn, c_puct=5, n_playout=10000):
+    def __init__(self, policy_value_fn, c_puct=5, n_playout=10000, ef_for_eight=-1):
         """
         policy_value_fn: a function that takes in a board state and outputs
             a list of (action, probability) tuples and also a score in [-1, 1]
@@ -97,11 +97,13 @@ class MCTS(object):
         c_puct: a number in (0, inf) that controls how quickly exploration
             converges to the maximum-value policy. A higher value means
             relying on the prior more.
+        ef_for_eight: efficient for eight connected region
         """
         self._root = TreeNode(None, 1.0)
         self._policy = policy_value_fn
         self._c_puct = c_puct
         self._n_playout = n_playout
+        self._ef_for_eight = ef_for_eight
 
     def _playout(self, state):
         """Run a single playout from the root to the leaf, getting a value at
@@ -142,7 +144,18 @@ class MCTS(object):
         state: the current game state
         temp: temperature parameter in (0, 1] controls the level of exploration
         """
-        for n in range(self._n_playout):
+        if self._ef_for_eight > 0:
+            # if self._n_playout is much larger than len(state.eight_connected_region_to_moved)
+            # in this case, we don't need to playout too many times
+            lenThreshould = len(state.eight_connected_region_to_moved) * self._ef_for_eight
+            # "state.moved >= 2" means it's not the first two move
+            if (len(state.moved) >= 2) and (self._n_playout > lenThreshould):
+                _n_playout = lenThreshould
+            else:
+                _n_playout = self._n_playout
+        else:
+            _n_playout = self._n_playout
+        for n in range(_n_playout):
             state_copy = copy.deepcopy(state)
             self._playout(state_copy)
 
@@ -172,8 +185,8 @@ class MCTSPlayer(object):
     """AI player based on MCTS"""
 
     def __init__(self, policy_value_function,
-                 c_puct=5, n_playout=2000, is_selfplay=0):
-        self.mcts = MCTS(policy_value_function, c_puct, n_playout)
+                 c_puct=5, n_playout=2000, is_selfplay=0, ef_for_eight=-1):
+        self.mcts = MCTS(policy_value_function, c_puct, n_playout, ef_for_eight)
         self._is_selfplay = is_selfplay
 
     def set_player_ind(self, p):

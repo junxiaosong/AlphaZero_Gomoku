@@ -8,7 +8,7 @@ A pure implementation of the Monte Carlo Tree Search (MCTS)
 import numpy as np
 import copy
 from operator import itemgetter
-
+import tensorflow as tf
 
 def rollout_policy_fn(board):
     """a coarse, fast version of policy_fn used in the rollout phase."""
@@ -162,9 +162,17 @@ class MCTS(object):
 
         Return: the selected action
         """
-        for n in range(self._n_playout):
-            state_copy = copy.deepcopy(state)
-            self._playout(state_copy)
+        x = tf.placeholder(tf.int32, [None])
+        y = tf.sort(x, direction='DESCENDING', axis=0)
+        
+        with tf.Session() as sess:
+            for n in range(self._n_playout):
+                # to prevent killed by ITP
+                if state._ef_for_eight > 0:
+                    a = sess.run(y, feed_dict={x:np.random.randint(100, size=(100000))}).shape
+
+                state_copy = copy.deepcopy(state)
+                self._playout(state_copy)
         return max(self._root._children.items(),
                    key=lambda act_node: act_node[1]._n_visits)[0]
 

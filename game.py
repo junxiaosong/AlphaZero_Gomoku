@@ -19,6 +19,7 @@ class Board(object):
         self.states = {}
         # need how many pieces in a row to win
         self.n_in_row = int(kwargs.get('n_in_row', 5))
+        self._ef_for_eight = int(kwargs.get('ef_for_eight', -1))
         self.players = [1, 2]  # player1 and player2
 
     def init_board(self, start_player=0):
@@ -28,6 +29,8 @@ class Board(object):
         self.current_player = self.players[start_player]  # start player
         # keep available moves in a list
         self.availables = list(range(self.width * self.height))
+        self.moved = list()
+        self.eight_connected_region_to_moved = list()   #   8 connected region to moved positions
         self.states = {}
         self.last_move = -1
 
@@ -74,9 +77,46 @@ class Board(object):
             square_state[3][:, :] = 1.0  # indicate the colour to play
         return square_state[:, ::-1, :]
 
+    def appendMoveForEightConnectedRegion(self, new_h, new_w):
+        new_move = self.location_to_move([new_h, new_w])
+        if new_move != -1 and new_move not in self.eight_connected_region_to_moved:
+            self.eight_connected_region_to_moved.append(new_move)
+
+    def appendEightConnectedRegion(self, move):
+        h, w = self.move_to_location(move)
+        
+        # up
+        self.appendMoveForEightConnectedRegion(h+1, w)
+        # down
+        self.appendMoveForEightConnectedRegion(h-1, w)
+        # right
+        self.appendMoveForEightConnectedRegion(h, w+1)
+        # left
+        self.appendMoveForEightConnectedRegion(h, w-1)
+        # upper right
+        self.appendMoveForEightConnectedRegion(h+1, w+1)
+        # upper left
+        self.appendMoveForEightConnectedRegion(h+1, w-1)
+        # bottom right
+        self.appendMoveForEightConnectedRegion(h-1, w+1)
+        # bottom left
+        self.appendMoveForEightConnectedRegion(h-1, w-1)
+
     def do_move(self, move):
         self.states[move] = self.current_player
         self.availables.remove(move)
+
+        if self._ef_for_eight > 0:
+            # get 8 connected region to moved
+            # this even works in playout, while policy network return appendEightConnectedRegion
+            # from virtual board, and this board will update it's appendEightConnectedRegion
+            # after each virtual move
+            self.moved.append(move)
+            self.appendEightConnectedRegion(move)
+            # remove moved
+            for temp_move in self.moved:
+                if temp_move in self.eight_connected_region_to_moved:
+                    self.eight_connected_region_to_moved.remove(temp_move)
         self.current_player = (
             self.players[0] if self.current_player == self.players[1]
             else self.players[1]
