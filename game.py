@@ -56,10 +56,10 @@ class Board(object):
 
     def current_state(self):
         """return the board state from the perspective of the current player.
-        state shape: 16*width*height
+        state shape: 19*width*height
         """
 
-        square_state = np.zeros((16, self.width, self.height))
+        square_state = np.zeros((19, self.width, self.height))
         if self.states:
             moves, players = np.array(list(zip(*self.states.items())))
             move_curr = moves[players == self.current_player]
