@@ -265,7 +265,7 @@ class Game(object):
         self.board.init_board()
         p1, p2 = self.board.players
         states, mcts_probs, current_players = [], [], []
-        move_list = [item for item in (self.board.width*self.board.height)]
+        move_list = [item for item in range(self.board.width*self.board.height)]
         if random.random() < 0.1:
             while True:
                 move_blank = random.choice(move_list)
