@@ -30,6 +30,7 @@ class Board(object):
         self.availables = list(range(self.width * self.height))
         self.states = {}
         self.last_move = -1
+        self.last_8_move = [0]*8
 
     def move_to_location(self, move):
         """
@@ -55,23 +56,25 @@ class Board(object):
 
     def current_state(self):
         """return the board state from the perspective of the current player.
-        state shape: 4*width*height
+        state shape: 11*width*height
         """
 
-        square_state = np.zeros((4, self.width, self.height))
+        square_state = np.zeros((11, self.width, self.height))
         if self.states:
             moves, players = np.array(list(zip(*self.states.items())))
             move_curr = moves[players == self.current_player]
             move_oppo = moves[players != self.current_player]
+
             square_state[0][move_curr // self.width,
                             move_curr % self.height] = 1.0
             square_state[1][move_oppo // self.width,
                             move_oppo % self.height] = 1.0
-            # indicate the last move location
-            square_state[2][self.last_move // self.width,
-                            self.last_move % self.height] = 1.0
+            # indicate the last 8 move location
+            for i in range(8):
+                square_state[2+i][self.last_8_move[i] // self.width,
+                                self.last_8_move[i] % self.height] = 1.0
         if len(self.states) % 2 == 0:
-            square_state[3][:, :] = 1.0  # indicate the colour to play
+            square_state[10][:, :] = 1.0  # indicate the colour to play
         return square_state[:, ::-1, :]
 
     def do_move(self, move):
@@ -82,6 +85,8 @@ class Board(object):
             else self.players[1]
         )
         self.last_move = move
+        self.last_8_move.pop(0)
+        self.last_8_move.append(move)
 
     def has_a_winner(self):
         width = self.width

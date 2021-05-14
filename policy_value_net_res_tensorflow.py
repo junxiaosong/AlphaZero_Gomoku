@@ -20,7 +20,7 @@ class PolicyValueNet():
         # Define the tensorflow neural network
         # 1. Input:
         self.input_states = tf.placeholder(
-                tf.float32, shape=[None, 4, board_height, board_width])
+                tf.float32, shape=[None, 11, board_height, board_width])
         self.input_state = tf.transpose(self.input_states, [0, 2, 3, 1])
         
         # 2. Common Networks Layers
