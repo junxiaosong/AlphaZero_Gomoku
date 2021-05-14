@@ -50,31 +50,52 @@ class Human(object):
     def set_player_ind(self, p):
         self.player = p
 
-    def get_action(self, board):
+    # def get_action(self, board):
+    #     try:
+    #         location = input("Your move: ")
+    #         if isinstance(location, str):  # for python3
+    #             location = [int(n, 10) for n in location.split(",")]
+    #         move = board.location_to_move(location)
+    #     except Exception as e:
+    #         move = -1
+    #     if move == -1 or move not in board.availables:
+    #         print("invalid move")
+    #         move = self.get_action(board)
+    #     return move
+    #
+    # def __str__(self):
+    #     return "Human {}".format(self.player)
+    def get_action(self, board, UI=None):
         try:
-            location = input("Your move: ")
+            # location = input("Your move: ")
+            inp = UI.get_input()
+            location = UI.move_2_loc(inp[1])
+            print(location)
             if isinstance(location, str):  # for python3
                 location = [int(n, 10) for n in location.split(",")]
             move = board.location_to_move(location)
+
         except Exception as e:
             move = -1
         if move == -1 or move not in board.availables:
             print("invalid move")
-            move = self.get_action(board)
+            move = self.get_action(board, UI)
+
         return move
 
     def __str__(self):
         return "Human {}".format(self.player)
 
-
+from UI.gui import GUI
 def run():
     n = args.n_in_row
     width, height = args.board_width, args.board_height
     model_file = args.model_file
-    try:
-        board = Board(width=width, height=height, n_in_row=n)
-        game = Game(board)
+    # try:
+    board = Board(width=width, height=height, n_in_row=n)
+    game = Game(board)
 
+    while True:
         if args.model_type == "numpy":
             policy_param = pickle.load(open(model_file, 'rb'),
                                        encoding='bytes')  # To support python3
@@ -90,9 +111,12 @@ def run():
         human = Human()
 
         # set start_player=0 for human first
-        game.start_play(human, mcts_player, start_player=1, is_shown=1)
-    except KeyboardInterrupt:
-        print('\n\rquit')
+        winner = game.start_play(human, mcts_player, start_player=1, is_shown=1)
+        game.UI.add_score(winner)
+        game.UI.restart_game(False)
+
+    # except KeyboardInterrupt:
+    #     print('\n\rquit')
 
 
 if __name__ == '__main__':

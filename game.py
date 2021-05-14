@@ -168,12 +168,14 @@ class Board(object):
     def get_current_player(self):
         return self.current_player
 
-
+from UI.gui import GUI
 class Game(object):
     """game server"""
 
     def __init__(self, board, **kwargs):
         self.board = board
+        self.UI = GUI(self.board.width)
+
 
     def graphic(self, board, player1, player2):
         """Draw the board and show game info"""
@@ -181,6 +183,7 @@ class Game(object):
         height = board.height
 
         print("Player", player1, "with X".rjust(3))
+        self.UI.show_messages("Player" + str(player1) + " with White")
         print("Player", player2, "with O".rjust(3))
         print()
         for x in range(width):
@@ -201,6 +204,7 @@ class Game(object):
 
     def start_play(self, player1, player2, start_player=0, is_shown=1):
         """start a game between two players"""
+
         if start_player not in (0, 1):
             raise Exception('start_player should be either 0 (player1 first) '
                             'or 1 (player2 first)')
@@ -214,8 +218,10 @@ class Game(object):
         while True:
             current_player = self.board.get_current_player()
             player_in_turn = players[current_player]
-            move = player_in_turn.get_action(self.board)
+            move = player_in_turn.get_action(self.board, UI=self.UI)
             self.board.do_move(move)
+            self.UI.render_step(self.board.move_to_location(move), self.board.current_player)
+
             if is_shown:
                 self.graphic(self.board, player1.player, player2.player)
             end, winner = self.board.game_end()
@@ -223,6 +229,7 @@ class Game(object):
                 if is_shown:
                     if winner != -1:
                         print("Game end. Winner is", players[winner])
+
                     else:
                         print("Game end. Tie")
                 return winner
