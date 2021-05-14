@@ -71,8 +71,8 @@ class Board(object):
                             move_oppo % self.height] = 1.0
             # indicate the last 8 move location
             for i in range(8):
-                square_state[2+i][self.last_8_move[i::2] // self.width,
-                                self.last_8_move[i::2] % self.height] = 1.0
+                square_state[2+i][np.array(self.last_8_move[i::2]) // self.width,
+                                np.array(self.last_8_move[i::2]) % self.height] = 1.0
         if len(self.states) % 2 == 0:
             square_state[10][:, :] = 1.0  # indicate the colour to play
         return square_state[:, ::-1, :]
