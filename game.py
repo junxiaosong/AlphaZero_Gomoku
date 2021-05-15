@@ -6,6 +6,7 @@
 from __future__ import print_function
 import numpy as np
 
+INPUT_STATE_CHANNEL_SIZE = 19
 
 class Board(object):
     """board for the game"""
@@ -56,10 +57,10 @@ class Board(object):
 
     def current_state(self):
         """return the board state from the perspective of the current player.
-        state shape: 19*width*height
+        state shape: INPUT_STATE_CHANNEL_SIZE*width*height
         """
 
-        square_state = np.zeros((19, self.width, self.height))
+        square_state = np.zeros((INPUT_STATE_CHANNEL_SIZE, self.width, self.height))
         if self.states:
             moves, players = np.array(list(zip(*self.states.items())))
             move_curr = moves[players == self.current_player]
@@ -70,11 +71,11 @@ class Board(object):
             square_state[1][move_oppo // self.width,
                             move_oppo % self.height] = 1.0
             # indicate the last 16 move location
-            for i in range(16):
+            for i in range(INPUT_STATE_CHANNEL_SIZE-3):
                 square_state[2+i][np.array(self.last_16_move[i::2]) // self.width,
                                 np.array(self.last_16_move[i::2]) % self.height] = 1.0
         if len(self.states) % 2 == 0:
-            square_state[10][:, :] = 1.0  # indicate the colour to play
+            square_state[INPUT_STATE_CHANNEL_SIZE-1][:, :] = 1.0  # indicate the colour to play
         return square_state[:, ::-1, :]
 
     def do_move(self, move):

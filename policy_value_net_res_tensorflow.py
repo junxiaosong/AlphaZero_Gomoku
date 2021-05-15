@@ -9,7 +9,7 @@ Tested in Tensorflow 1.4 and 1.5
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
-
+from game import INPUT_STATE_CHANNEL_SIZE
 
 class PolicyValueNet():
     def __init__(self, board_width, board_height, model_file=None):
@@ -20,7 +20,7 @@ class PolicyValueNet():
         # Define the tensorflow neural network
         # 1. Input:
         self.input_states = tf.placeholder(
-                tf.float32, shape=[None, 19, board_height, board_width])
+                tf.float32, shape=[None, INPUT_STATE_CHANNEL_SIZE, board_height, board_width])
         self.input_state = tf.transpose(self.input_states, [0, 2, 3, 1])
         
         # 2. Common Networks Layers
@@ -151,7 +151,7 @@ class PolicyValueNet():
         """
         legal_positions = board.availables
         current_state = np.ascontiguousarray(board.current_state().reshape(
-                -1, 19, self.board_width, self.board_height))
+                -1, INPUT_STATE_CHANNEL_SIZE, self.board_width, self.board_height))
         act_probs, value = self.policy_value(current_state)
         act_probs = zip(legal_positions, act_probs[0][legal_positions])
         return act_probs, value
