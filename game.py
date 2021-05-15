@@ -31,7 +31,7 @@ class Board(object):
         self.availables = list(range(self.width * self.height))
         self.states = {}
         self.last_move = -1
-        self.last_16_move = [0]*16
+        self.last_16_move = [0]*(INPUT_STATE_CHANNEL_SIZE-3)
 
     def move_to_location(self, move):
         """
