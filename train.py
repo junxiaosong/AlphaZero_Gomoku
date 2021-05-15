@@ -18,6 +18,13 @@ from mcts_alphaZero import MCTSPlayer
 #from policy_value_net_keras import PolicyValueNet # Keras
 from policy_value_net_res_tensorflow import PolicyValueNet # Tensorflow
 from datetime import datetime
+import utils
+import os
+
+OUTPUT_DIR = "output/" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+SCORE_OUTPUT = OUTPUT_DIR + "scores.txt"
+CONSOLE_OUTPUT = OUTPUT_DIR + "console.txt"
 
 class TrainPipeline():
     def __init__(self, init_model=None):
@@ -126,7 +133,7 @@ class TrainPipeline():
         explained_var_new = (1 -
                              np.var(np.array(winner_batch) - new_v.flatten()) /
                              np.var(np.array(winner_batch)))
-        print(("kl:{:.5f},"
+        utils.log(("kl:{:.5f},"
                "lr_multiplier:{:.3f},"
                "loss:{},"
                "entropy:{},"
@@ -137,10 +144,10 @@ class TrainPipeline():
                         loss,
                         entropy,
                         explained_var_old,
-                        explained_var_new))
+                        explained_var_new), CONSOLE_OUTPUT)
         return loss, entropy
 
-    def policy_evaluate(self, current_batch, output_dir, n_games=100):
+    def policy_evaluate(self, current_batch, n_games=100):
         """
         Evaluate the trained policy by playing against the pure MCTS player
         Note: this is only for monitoring the progress of training
@@ -159,43 +166,35 @@ class TrainPipeline():
             win_cnt[winner] += 1
         win_ratio = 1.0*(win_cnt[1] + 0.5*win_cnt[-1]) / n_games
         
-        output_file = output_dir + "/score.txt"
         output = "current self play batch: {}, num_playouts: {}, win: {}, lose: {}, tie: {}, win ratio: {}".format(
                 current_batch,
                 self.pure_mcts_playout_num,
                 win_cnt[1], win_cnt[2], win_cnt[-1], win_ratio)
 
-        with open(output_file,'a+') as scoreRecord:
-            scoreRecord.write(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S "))
-            scoreRecord.write(output+'\n')
-        print(output)
+        utils.log(output, SCORE_OUTPUT)
+        
         return win_ratio
 
     def run(self):
         """run the training pipeline"""
         try:
-            import os
-            output_dir = "output/" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-
             for i in range(self.game_batch_num):
                 self.collect_selfplay_data(self.play_batch_size)
-                print("batch i:{}, episode_len:{}".format(
-                        i+1, self.episode_len))
+                utils.log("batch i:{}, episode_len:{}".format(
+                        i+1, self.episode_len), CONSOLE_OUTPUT)
                 if len(self.data_buffer) > self.batch_size:
                     loss, entropy = self.policy_update()
                 # check the performance of the current model,
                 # and save the model params
                 if (i+1) % self.check_freq == 0:
-                    print("current self-play batch: {}".format(i+1))
-                    win_ratio = self.policy_evaluate(current_batch=i+1, output_dir=output_dir)
-                    self.policy_value_net.save_model(output_dir+'/current_policy.model')
+                    utils.log("current self-play batch: {}".format(i+1), CONSOLE_OUTPUT)
+                    win_ratio = self.policy_evaluate(current_batch=i+1)
+                    self.policy_value_net.save_model(OUTPUT_DIR+'/current_policy.model')
                     if win_ratio > self.best_win_ratio:
-                        print("New best policy!!!!!!!!")
+                        utils.log("New best policy!!!!!!!!", CONSOLE_OUTPUT)
                         self.best_win_ratio = win_ratio
                         # update the best_policy
-                        self.policy_value_net.save_model(output_dir+'/best_policy.model')
+                        self.policy_value_net.save_model(OUTPUT_DIR+'/best_policy.model')
                         if (self.best_win_ratio == 1.0 and
                                 self.pure_mcts_playout_num < 5000):
                             self.pure_mcts_playout_num += 1000
