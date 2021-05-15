@@ -23,8 +23,8 @@ import os
 
 OUTPUT_DIR = "output/" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-SCORE_OUTPUT = OUTPUT_DIR + "scores.txt"
-CONSOLE_OUTPUT = OUTPUT_DIR + "console.txt"
+SCORE_OUTPUT = OUTPUT_DIR + "/scores.txt"
+CONSOLE_OUTPUT = OUTPUT_DIR + "/console.txt"
 
 class TrainPipeline():
     def __init__(self, init_model=None):
