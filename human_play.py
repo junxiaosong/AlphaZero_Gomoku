@@ -33,6 +33,8 @@ parser.add_argument("--output_dir", default=None, type=str,
 parser.add_argument("--model_file", default='./best_policy.model', type=str,
                     help="The model_file.")
 parser.add_argument("--n_layer_resnet", default=-1, type=int, help="num of simulations for each move.")
+parser.add_argument("--enable_gui", default=True, action='store_true',
+                    help="enable_gui")
 
 args, _ = parser.parse_known_args()
 print("Print the args:")
@@ -96,19 +98,21 @@ def run():
     game = Game(board, enable_gui=args.enable_gui)
     start_index = 0
 
+    # only load once
+    if args.model_type == "numpy":
+        policy_param = pickle.load(open(model_file, 'rb'),
+                                    encoding='bytes')  # To support python3
+
+        best_policy = MODEL_CLASSES[args.model_type](args, width, height, policy_param)
+    else:
+        best_policy = MODEL_CLASSES[args.model_type](args, width, height, args.model_file)
+    mcts_player = MCTSPlayer(best_policy.policy_value_fn,
+                            c_puct=5,
+                            n_playout=400)  # set larger n_playout for better performance
+
     while True:
         start_player = 1 if start_index * 1.0 % 2 == 0 else 0
-        if args.model_type == "numpy":
-            policy_param = pickle.load(open(model_file, 'rb'),
-                                       encoding='bytes')  # To support python3
-
-            best_policy = MODEL_CLASSES[args.model_type](args, width, height, policy_param)
-        else:
-            best_policy = MODEL_CLASSES[args.model_type](args, width, height, args.model_file)
-        mcts_player = MCTSPlayer(best_policy.policy_value_fn,
-                                 c_puct=5,
-                                 n_playout=400)  # set larger n_playout for better performance
-
+        
         # human player, input your move in the format: 2,3
         human = Human()
 
