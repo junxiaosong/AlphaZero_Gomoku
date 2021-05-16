@@ -58,7 +58,7 @@ parser.add_argument("--ef_for_eight", default=-1, type=int,
 parser.add_argument("--enable_random_logic", action='store_true',
                     help="enable random movement logic")
 parser.add_argument("--disable_equi_logic", action='store_true',
-                    help="enable random movement logic")
+                    help="disable_equi_logic")
 
 args, _ = parser.parse_known_args()
 print("Print the args:")

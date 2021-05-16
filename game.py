@@ -174,7 +174,11 @@ class Game(object):
 
     def __init__(self, board, **kwargs):
         self.board = board
-        self.UI = GUI(self.board.width)
+        self.enable_gui = kwargs.get('enable_gui', False)
+        if self.enable_gui:
+            self.UI = GUI(self.board.width)
+        else:
+            self.UI = None
 
 
     def graphic(self, board, player1, player2):
@@ -183,7 +187,8 @@ class Game(object):
         height = board.height
 
         print("Player", player1, "with X".rjust(3))
-        self.UI.show_messages("Player" + str(player1) + " with Black")
+        if self.enable_gui:
+            self.UI.show_messages("Player" + str(player1) + " with Black")
         print("Player", player2, "with O".rjust(3))
         print()
         for x in range(width):
@@ -221,8 +226,8 @@ class Game(object):
             current_player = self.board.get_current_player()
             player_in_turn = players[current_player]
             move = player_in_turn.get_action(self.board, UI=self.UI)
-
-            self.UI.render_step(self.board.move_to_location(move), self.board.current_player)
+            if self.enable_gui:
+                self.UI.render_step(self.board.move_to_location(move), self.board.current_player)
             self.board.do_move(move)
             if is_shown:
                 self.graphic(self.board, player1.player, player2.player)

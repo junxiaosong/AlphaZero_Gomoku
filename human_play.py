@@ -93,7 +93,7 @@ def run():
     model_file = args.model_file
     # try:
     board = Board(width=width, height=height, n_in_row=n)
-    game = Game(board)
+    game = Game(board, enable_gui=args.enable_gui)
     start_index = 0
 
     while True:
@@ -114,25 +114,26 @@ def run():
 
         # set start_player=0 for human first
         winner = game.start_play(human, mcts_player, start_player=start_player, is_shown=1)
-        game.UI.add_score(winner)
-        game.UI.restart_game(False)
-        start_index += 1
-        inp = game.UI.get_input()
-        if inp[0] == 'RestartGame':
-            game.UI.restart_game()
-
-        elif inp[0] == 'ResetScore':
-            game.UI.reset_score()
-            continue
-
-        elif inp[0] == 'quit':
-            exit()
-        elif inp[0] == 'SwitchPlayer':
+        if args.enable_gui:
+            game.UI.add_score(winner)
             game.UI.restart_game(False)
-            game.UI.reset_score()
+        start_index += 1
+        if args.enable_gui:
+            inp = game.UI.get_input()
+            if inp[0] == 'RestartGame':
+                game.UI.restart_game()
 
-        else:
-            continue
+            elif inp[0] == 'ResetScore':
+                game.UI.reset_score()
+                continue
+
+            elif inp[0] == 'quit':
+                exit()
+            elif inp[0] == 'SwitchPlayer':
+                game.UI.restart_game(False)
+                game.UI.reset_score()
+            else:
+                continue
 
     # except KeyboardInterrupt:
     #     print('\n\rquit')
