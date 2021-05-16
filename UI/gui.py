@@ -130,17 +130,17 @@ class GUI:
         """
         transfer a move value to a location value
         :param move: an int type move value such as 34
-        :return: an 1*2 dimension location value such as (2, 3)
+        :return: an 1*2 dimension location value such as (4, 8)
         """
-        return move % self.BoardSize, move // self.BoardSize
+        return move // self.BoardSize, move % self.BoardSize
 
     def loc_2_move(self, loc):
         """
         transfer a move value to a location value
-        :param loc: an 1*2 dimension location value such as (2, 3)
-        :return: an int type move value such as 34
+        :param loc: an 1*2 dimension location value such as (4, 8)
+        :return: an int type move value such as 34 = 4 * 9 + 8
         """
-        return loc[0] + loc[1] * self.BoardSize
+        return loc[0] * self.BoardSize + loc[1]
 
     def get_input(self):
         """
@@ -166,7 +166,7 @@ class GUI:
                             else:
                                 x = (mouse_pos[0] - self.UnitSize)//self.UnitSize
                                 y = self.BoardSize - (mouse_pos[1] - self.UnitSize)//self.UnitSize - 1
-                                move = self.loc_2_move((x, y))
+                                move = self.loc_2_move((y, x))
                                 if move not in self.state:
                                     return 'move', move
 
@@ -228,7 +228,7 @@ class GUI:
     def _draw_pieces(self, loc, player, last_step=False):
         """
         draw pieces
-        :param loc:  1*2 dimension location value such as (2, 3) or an int type move value such as 34
+        :param loc:  1*2 dimension location value such as (4, 8) or an int type move value such as 34 = 4 * 9 + 8
         :param player: the name of the player
         :param last_step: whether it is the last step
         """
@@ -238,9 +238,9 @@ class GUI:
             pass
 
         if type(loc) is int:
-            x, y = self.move_2_loc(loc)
+            y, x = self.move_2_loc(loc)
         else:
-            x, y = loc
+            y, x = loc
         pos = int(self.UnitSize * 1.5 + x * self.UnitSize), int(self.UnitSize * 1.5 + (self.BoardSize - y - 1) * self.UnitSize)
         if player == 1:
             c = (0, 0, 0)

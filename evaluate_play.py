@@ -40,9 +40,11 @@ parser.add_argument("--model_file1", default='./best_policy.model', type=str,
                     help="The model_file.")
 parser.add_argument("--model_file2", default='./best_policy.model', type=str,
                     help="The model_file.")
-parser.add_argument("--round_num",default=1,type=int,help="board_height")
+parser.add_argument("--round_num",default=2,type=int,help="board_height")
 parser.add_argument("--n_playout",default=400,type=int,help="n_playout")
 parser.add_argument("--n_layer_resnet", default=-1, type=int, help="num of simulations for each move.")
+parser.add_argument("--enable_gui", action='store_true',
+                    help="enable_gui")
 
 
 args, _ = parser.parse_known_args()
@@ -76,6 +78,52 @@ class Human(object):
 
     def __str__(self):
         return "Human {}".format(self.player)
+class Human(object):
+    """
+    human player
+    """
+
+    def __init__(self):
+        self.player = None
+
+    def set_player_ind(self, p):
+        self.player = p
+
+    # def get_action(self, board):
+    #     try:
+    #         location = input("Your move: ")
+    #         if isinstance(location, str):  # for python3
+    #             location = [int(n, 10) for n in location.split(",")]
+    #         move = board.location_to_move(location)
+    #     except Exception as e:
+    #         move = -1
+    #     if move == -1 or move not in board.availables:
+    #         print("invalid move")
+    #         move = self.get_action(board)
+    #     return move
+    #
+    # def __str__(self):
+    #     return "Human {}".format(self.player)
+    def get_action(self, board, UI=None):
+        try:
+            # location = input("Your move: ")
+            inp = UI.get_input()
+            location = UI.move_2_loc(inp[1])
+            print(location)
+            if isinstance(location, str):  # for python3
+                location = [int(n, 10) for n in location.split(",")]
+            move = board.location_to_move(location)
+
+        except Exception as e:
+            move = -1
+        if move == -1 or move not in board.availables:
+            print("invalid move")
+            move = self.get_action(board, UI)
+
+        return move
+
+    def __str__(self):
+        return "Human {}".format(self.player)
 
 def get_mcts_player(model_type, model_file, width, height):
     if model_type == "numpy":
@@ -94,11 +142,15 @@ def run():
     n = args.n_in_row
     width, height = args.board_width, args.board_height
     board = Board(width=width, height=height, n_in_row=n)
-    game = Game(board)
+    game = Game(board, enable_gui=args.enable_gui)
     mcts1 = get_mcts_player(args.model_type1, args.model_file1, width, height)
     mcts2 = get_mcts_player(args.model_type2, args.model_file2, width, height)
+    # mcts1 = Human()
+    # mcts2 = Human()
     winner_dict = dict()
     while True:
+        if args.enable_gui:
+            game.UI.reset_score()
         for i in range(0, args.round_num):
             start_player = 1 if i * 1.0 % 2 == 0 else 0
             print("start player")
@@ -107,8 +159,26 @@ def run():
             if winner not in winner_dict:
                 winner_dict[winner] = 0
             winner_dict[winner] += 1
-            game.UI.add_score(winner)
-            game.UI.restart_game(False)
+            if args.enable_gui:
+                game.UI.add_score(winner)
+                game.UI.restart_game(False)
+        if args.enable_gui:
+            inp = game.UI.get_input()
+            if inp[0] == 'RestartGame':
+                game.UI.restart_game()
+
+            elif inp[0] == 'ResetScore':
+                game.UI.reset_score()
+                continue
+
+            elif inp[0] == 'quit':
+                exit()
+            elif inp[0] == 'SwitchPlayer':
+                game.UI.restart_game(False)
+                game.UI.reset_score()
+            else:
+                continue
+
     print("output winner dict to {}".format(os.path.join(args.output_dir, "winner_dict.tsv")))
     with open(os.path.join(args.output_dir, "winner_dict.tsv"), 'w', encoding='utf8') as fout:
         fout.write(json.dumps(winner_dict))
