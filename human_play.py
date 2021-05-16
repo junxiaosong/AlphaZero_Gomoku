@@ -94,8 +94,10 @@ def run():
     # try:
     board = Board(width=width, height=height, n_in_row=n)
     game = Game(board)
+    start_index = 0
 
     while True:
+        start_player = 1 if start_index * 1.0 % 2 == 0 else 0
         if args.model_type == "numpy":
             policy_param = pickle.load(open(model_file, 'rb'),
                                        encoding='bytes')  # To support python3
@@ -111,9 +113,26 @@ def run():
         human = Human()
 
         # set start_player=0 for human first
-        winner = game.start_play(human, mcts_player, start_player=1, is_shown=1)
+        winner = game.start_play(human, mcts_player, start_player=start_player, is_shown=1)
         game.UI.add_score(winner)
         game.UI.restart_game(False)
+        start_index += 1
+        inp = game.UI.get_input()
+        if inp[0] == 'RestartGame':
+            game.UI.restart_game()
+
+        elif inp[0] == 'ResetScore':
+            game.UI.reset_score()
+            continue
+
+        elif inp[0] == 'quit':
+            exit()
+        elif inp[0] == 'SwitchPlayer':
+            game.UI.restart_game(False)
+            game.UI.reset_score()
+
+        else:
+            continue
 
     # except KeyboardInterrupt:
     #     print('\n\rquit')
