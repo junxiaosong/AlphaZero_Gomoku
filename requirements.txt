@@ -3,3 +3,4 @@ keras
 numpy
 tensorflow-gpu==1.15.0
 torch >= 1.2
+tensorboardX
