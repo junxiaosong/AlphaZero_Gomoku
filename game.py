@@ -126,7 +126,7 @@ class Board(object):
         states = self.states
         n = self.n_in_row
 
-        if self.states[self.last_move] == self.players[self.start_player] and self.check_forbidden_hands():
+        if self.states and self.states[self.last_move] == self.players[self.start_player] and self.check_forbidden_hands():
             return True, self.players[(self.start_player + 1) % 2]
 
         moved = list(set(range(width * height)) - set(self.availables))
