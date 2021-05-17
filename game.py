@@ -6,7 +6,7 @@
 from __future__ import print_function
 import numpy as np
 
-INPUT_STATE_CHANNEL_SIZE = 19
+INPUT_STATE_CHANNEL_SIZE = 17
 
 class Board(object):
     """board for the game"""
@@ -97,14 +97,15 @@ class Board(object):
             move_curr = moves[players == self.current_player]
             move_oppo = moves[players != self.current_player]
 
-            square_state[0][move_curr // self.width,
-                            move_curr % self.height] = 1.0
-            square_state[1][move_oppo // self.width,
-                            move_oppo % self.height] = 1.0
-            # indicate the last 16 move location
-            for i in range(INPUT_STATE_CHANNEL_SIZE-3):
-                square_state[2+i][np.array(self.last_16_move[i::2]) // self.width,
-                                np.array(self.last_16_move[i::2]) % self.height] = 1.0
+            lookback_steps = (INPUT_STATE_CHANNEL_SIZE-1)//2
+            for i in range(lookback_steps):
+                if i < move_curr.shape[0]:
+                    square_state[i][move_curr[:-i] // self.width,
+                                    move_curr[:-i] % self.height] = 1.0
+                if i < move_oppo.shape[0]:
+                    square_state[i+lookback_steps][move_oppo[:-i] // self.width,
+                                    move_oppo[:-i] % self.height] = 1.0
+
         if len(self.states) % 2 == 0:
             square_state[INPUT_STATE_CHANNEL_SIZE-1][:, :] = 1.0  # indicate the colour to play
         return square_state[:, ::-1, :]
