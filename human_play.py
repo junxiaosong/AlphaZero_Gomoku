@@ -49,7 +49,7 @@ class Human(object):
 def run():
     n = 5
     width, height = 9, 9
-    model_file = 'output/best_policy.model.meta'
+    model_file = 'output/best_policy.model'
     try:
         board = Board(width=width, height=height, n_in_row=n)
         game = Game(board)
