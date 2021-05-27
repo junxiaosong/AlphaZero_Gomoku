@@ -73,14 +73,14 @@ class Gobang() :
 
         self.start_player = 0
         width, height, n_in_row = 9, 9, 5
-        model_file = 'output/best_policy.model'
+        model_file = 'output/current_policy.model'
         board = Board(width=width, height=height, n_in_row=n_in_row)
         self.game = Game(board)
         self.game.board.init_board(self.start_player)
         self.best_policy = PolicyValueNet(width, height, model_file=model_file)
         self.mcts_player = MCTSPlayer(self.best_policy.policy_value_fn,
                                  c_puct=5,
-                                 n_playout=400)  # set larger n_playout for better performance
+                                 n_playout=500)  # set larger n_playout for better performance
         self.human_player = Human()
         self.human_player.set_player_ind(1)
         self.mcts_player.set_player_ind(2)
@@ -130,7 +130,7 @@ class Gobang() :
             if end:
                 self.flag_win = 1
                 self.flag_empty = 0
-                print(self.color," win!!!")
+                print(self.color, player_in_turn.__class__.__name__, "win!!!")
                 self.game_print.set(self.color+"获胜")
             else:
                 self.change_color()
