@@ -114,14 +114,14 @@ class Gobang() :
                 last_y = last_move//9
                 last_x = last_move%9
                 self.change_color()
-                self.board.canvas.delete(f"chessman{last_move}")
-                self.board.canvas.create_oval(25+50*last_x-15 , 25+50*last_y-15 , 25+50*last_x+15 , 25+50*last_y+15 , fill = self.color,tags = f"chessman{last_move}")
+                self.board.canvas.delete("chessman_new")
+                self.board.canvas.create_oval(25+50*last_x-15 , 25+50*last_y-15 , 25+50*last_x+15 , 25+50*last_y+15 , fill = self.color,tags = "chessman")
                 self.change_color()
 
             self.db[y][x] = self.color_count
             current_move = x+9*y
             self.order.append(current_move)
-            self.board.canvas.create_oval(25+50*x-18 , 25+50*y-18 , 25+50*x+18 , 25+50*y+18 , fill = self.color,tags = f"chessman{current_move}")
+            self.board.canvas.create_oval(25+50*x-18 , 25+50*y-18 , 25+50*x+18 , 25+50*y+18 , fill = self.color,tags = "chessman_new")
             current_player = self.game.board.get_current_player()
             player_in_turn = self.players[current_player]
             print(self.color, player_in_turn.__class__.__name__, f"{x}, {y}")
@@ -235,7 +235,9 @@ class Gobang() :
 
     #清空
     def empty_all(self) :
+        self.board.canvas.delete("chessman_new")
         self.board.canvas.delete("chessman")
+        print(" Empty all!!!")
         #还原初始化
         self.db = [([2] * 9) for i in range(9)]
         self.order = []
@@ -255,7 +257,7 @@ class Gobang() :
             return
         self.flag_win = 0
         self.game_print.set("请"+self.color+"落子")
-        
+        print(" New game start...")
         current_player = self.game.board.get_current_player()
         if current_player == self.human_player.player:
             return
@@ -266,7 +268,7 @@ class Gobang() :
         y = move//9    
         self.db[y][x] = self.color_count
         self.order.append(move)
-        self.board.canvas.create_oval(25+50*x-18 , 25+50*y-18 , 25+50*x+18 , 25+50*y+18 , fill = self.color,tags = f"chessman{move}")
+        self.board.canvas.create_oval(25+50*x-18 , 25+50*y-18 , 25+50*x+18 , 25+50*y+18 , fill = self.color,tags = "chessman_new")
         print(self.color, player_in_turn.__class__.__name__, f"{x}, {y}")
         self.game.board.do_move(move)
         self.change_color()
