@@ -122,8 +122,7 @@ class Gobang() :
             current_move = x+9*y
             self.order.append(current_move)
             self.board.canvas.create_oval(25+50*x-18 , 25+50*y-18 , 25+50*x+18 , 25+50*y+18 , fill = self.color,tags = "chessman_new")
-            current_player = self.game.board.get_current_player()
-            player_in_turn = self.players[current_player]
+            player_in_turn = self.get_current_player()
             print(self.color, player_in_turn.__class__.__name__, f"{x}, {y}")
             self.game.board.do_move(current_move)
             end, winner = self.game.board.game_end()
@@ -131,15 +130,14 @@ class Gobang() :
                 self.flag_win = 1
                 self.flag_empty = 0
                 print(self.color, player_in_turn.__class__.__name__, "win!!!")
-                self.game_print.set(self.color+"获胜")
+                self.game_print.set(self.color+"-"+player_in_turn.__class__.__name__+"获胜")
             else:
                 self.change_color()
-                self.game_print.set("请"+self.color+"落子")
-                current_player = self.game.board.get_current_player()
-                if current_player == self.human_player.player:
+                player_in_turn = self.get_current_player()
+                self.game_print.set("请"+self.color+"-"+player_in_turn.__class__.__name__+"落子")
+                if player_in_turn is self.human_player:
                     return
                 self.board.window.update()
-                player_in_turn = self.players[current_player]
                 move = player_in_turn.get_action(self.game.board)
                 x = move%9
                 y = move//9
@@ -249,6 +247,10 @@ class Gobang() :
         self.start_player = (self.start_player+1)%2
         self.game.board.init_board(self.start_player)
 
+    def get_current_player(self):
+        current_player = self.game.board.get_current_player()
+        player_in_turn = self.players[current_player]
+        return player_in_turn
 
     #将self.flag_win置0才能在棋盘上落子
     def game_start(self) :
@@ -256,13 +258,13 @@ class Gobang() :
         if self.flag_empty == 0:
             return
         self.flag_win = 0
-        self.game_print.set("请"+self.color+"落子")
         print(" New game start...")
-        current_player = self.game.board.get_current_player()
-        if current_player == self.human_player.player:
+        player_in_turn = self.get_current_player()
+        self.game_print.set("请"+self.color+"-"+player_in_turn.__class__.__name__+"落子")
+        self.board.window.update()
+        if player_in_turn is self.human_player:
             return
 
-        player_in_turn = self.players[current_player]
         move = player_in_turn.get_action(self.game.board)
         x = move%9
         y = move//9    
@@ -272,13 +274,14 @@ class Gobang() :
         print(self.color, player_in_turn.__class__.__name__, f"{x}, {y}")
         self.game.board.do_move(move)
         self.change_color()
-        self.game_print.set("请"+self.color+"落子")
+        player_in_turn = self.get_current_player()
+        self.game_print.set("请"+self.color+"-"+player_in_turn.__class__.__name__+"落子")
         self.board.window.update()
 
 
     def options(self) :
         self.board.canvas.bind("<Button-1>",self.chess_moving)
-        Label(self.board.window , textvariable = self.game_print , font = ("Arial", 20) ).place(relx = 0, rely = 0 ,x = 475 , y = 200)
+        Label(self.board.window , textvariable = self.game_print , font = ("Arial", 12) ).place(relx = 0, rely = 0 ,x = 475 , y = 200)
         Button(self.board.window , text= "开始游戏" ,command = self.game_start,width = 13, font = ("Verdana", 12)).place(relx=0, rely=0, x=475, y=15)
         #Button(self.board.window , text= "我要悔棋" ,command = self.withdraw,width = 13, font = ("Verdana", 12)).place(relx=0, rely=0, x=475, y=60)
         Button(self.board.window , text= "清空棋局" ,command = self.empty_all,width = 13, font = ("Verdana", 12)).place(relx=0, rely=0, x=475, y=105)
