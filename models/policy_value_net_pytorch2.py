@@ -139,7 +139,11 @@ class PolicyValueNet():
         output: a list of (action, probability) tuples for each available
         action and the score of the board state
         """
-        legal_positions = board.availables
+        # the first two move is random
+        if len(board.moved) <= 2 or board._ef_for_eight <= 0:
+                legal_positions = board.availables
+        else:
+                legal_positions = board.eight_connected_region_to_moved
         current_state = np.ascontiguousarray(board.current_state().reshape(
                 -1, 4, self.board_width, self.board_height))
         if self.use_gpu:

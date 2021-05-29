@@ -17,11 +17,13 @@ from models.policy_value_net_pytorch import PolicyValueNet as PytorchPolicyValue
 from models.policy_value_net_pytorch2 import PolicyValueNet as PytorchPolicyValueNet2 # Pytorch
 
 from models.policy_value_net_tensorflow import PolicyValueNet as TensorflowPolicyValueNet# Tensorflow
+from models.policy_value_net_tensorflow2 import PolicyValueNet as TensorflowPolicyValueNet2# Tensorflow
 import os
 MODEL_CLASSES = {
 "pytorch":PytorchPolicyValueNet,
 "pytorch2":PytorchPolicyValueNet2,
-"tensorflow":TensorflowPolicyValueNet
+"tensorflow":TensorflowPolicyValueNet,
+"tensorflow2":TensorflowPolicyValueNet2
 }
 #from models.policy_value_net_keras import PolicyValueNet as KerasPolicyValueNet# Keras
 import argparse
@@ -101,12 +103,14 @@ class TrainPipeline():
             print("start training from an initial policy-value net")
             self.policy_value_net = MODEL_CLASSES[args.model_type](args, self.board_width,
                                                    self.board_height,
+                                                   training=True,
                                                    model_file=init_model)
         else:
             # start training from a new policy-value net
             print("start training from a new policy-value net")
             self.policy_value_net = MODEL_CLASSES[args.model_type](args, self.board_width,
-                                                   self.board_height)
+                                                   self.board_height,
+                                                   training=True)
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                       c_puct=self.c_puct,
                                       n_playout=self.n_playout,

@@ -11,7 +11,7 @@ import tensorflow as tf
 
 
 class PolicyValueNet():
-    def __init__(self, args, board_width, board_height, model_file=None):
+    def __init__(self, args, board_width, board_height, training=False, model_file=None):
         self.board_width = board_width
         self.board_height = board_height
 
@@ -36,9 +36,10 @@ class PolicyValueNet():
         if args.n_layer_resnet != -1:
             for block in range(args.n_layer_resnet):
                 if block == 0:
-                    setattr(self, "res_%i" % block, self.ResBlock(self.conv3))
+                    setattr(self, "res_%i" % block, self.ResBlock(self.conv3, training=training))
                 else:
                     setattr(self, "res_%i" % block, getattr(self, "res_%i" % (block-1)))
+
         # 3-1 Action Networks
         
         if args.n_layer_resnet != -1:
@@ -115,11 +116,22 @@ class PolicyValueNet():
         if model_file is not None:
             self.restore_model(model_file)
 
-    def ResBlock(self, input):
-        return tf.layers.conv2d(inputs=input, filters=128,
+    def ResBlock(self, input, training=False, planes=128):
+        residual = input
+        out = tf.layers.conv2d(inputs=input, filters=planes,
                                       kernel_size=[3, 3], padding="same",
                                       data_format="channels_last",
-                                      activation=tf.nn.relu)
+                                      activation=None)
+        out = tf.layers.batch_normalization(out, axis=1, training=training)
+        out = tf.nn.relu(out)
+        out = tf.layers.conv2d(inputs=input, filters=planes,
+                                      kernel_size=[3, 3], padding="same",
+                                      data_format="channels_last",
+                                      activation=None)
+        out = tf.layers.batch_normalization(out, axis=1, training=training)
+        out += residual
+
+        return tf.nn.relu(out)
 
     def policy_value(self, state_batch):
         """
