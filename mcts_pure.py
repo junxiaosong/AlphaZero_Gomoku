@@ -133,6 +133,7 @@ class MCTS(object):
         # Evaluate the leaf node by random rollout
         leaf_value = self._evaluate_rollout(state)
         # Update value and visit count of nodes in this traversal.
+        # This leaf value is used for parent, so if evaluation value is 1, then current player win, and this node's value should be -1.
         node.update_recursive(-leaf_value)
 
     def _evaluate_rollout(self, state, limit=1000):
