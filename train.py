@@ -190,7 +190,7 @@ class TrainPipeline():
                     utils.log("current self-play batch: {}".format(i+1), CONSOLE_OUTPUT)
                     win_ratio = self.policy_evaluate(current_batch=i+1)
                     self.policy_value_net.save_model(OUTPUT_DIR+'/current_policy.model')
-                    if win_ratio > self.best_win_ratio:
+                    if win_ratio >= self.best_win_ratio:
                         utils.log("New best policy!!!!!!!!", CONSOLE_OUTPUT)
                         self.best_win_ratio = win_ratio
                         # update the best_policy
@@ -204,6 +204,5 @@ class TrainPipeline():
 
 
 if __name__ == '__main__':
-    #training_pipeline = TrainPipeline(init_model='output/best_policy.model')
-    training_pipeline = TrainPipeline()
+    training_pipeline = TrainPipeline(init_model='output/current_policy.model')
     training_pipeline.run()
