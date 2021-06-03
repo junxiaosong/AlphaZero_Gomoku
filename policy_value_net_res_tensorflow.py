@@ -100,7 +100,8 @@ class PolicyValueNet():
 
         self.mom_optimizer = tf.train.MomentumOptimizer(
                 learning_rate=self.learning_rate,momentum=0.9).minimize(self.loss)
-        self.session.run(tf.variables_initializer(self.mom_optimizer.variables()))
+        var_list = [var for var in tf.global_variables() if 'Momentum' in var.name]
+        self.session.run(tf.variables_initializer(var_list))
 
     def _batch_norm(self, x, is_training, scope="bn"):
         z = tf.cond(is_training, lambda: batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None,is_training=True, reuse=None, trainable=True, scope=scope), 
