@@ -78,8 +78,7 @@ class PolicyValueNet():
 
         # Define the optimizer we use for training
         self.learning_rate = tf.placeholder(tf.float32)
-        self.mom_optimizer = tf.train.MomentumOptimizer(
-                learning_rate=self.learning_rate,momentum=0.9).minimize(self.loss)
+        
         self.adam_optimizer = tf.train.AdamOptimizer(
                 learning_rate=self.learning_rate).minimize(self.loss)
 
@@ -99,6 +98,8 @@ class PolicyValueNet():
         if model_file is not None:
             self.restore_model(model_file)
 
+        self.mom_optimizer = tf.train.MomentumOptimizer(
+                learning_rate=self.learning_rate,momentum=0.9).minimize(self.loss)
     def _batch_norm(self, x, is_training, scope="bn"):
         z = tf.cond(is_training, lambda: batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None,is_training=True, reuse=None, trainable=True, scope=scope), 
                                 lambda: batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None,is_training=False, reuse=True, trainable=False, scope=scope))
