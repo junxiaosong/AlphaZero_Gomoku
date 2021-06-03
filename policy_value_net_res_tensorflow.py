@@ -78,13 +78,9 @@ class PolicyValueNet():
 
         # Define the optimizer we use for training
         self.learning_rate = tf.placeholder(tf.float32)
-        if model_file != None:
-            self.optimizer = tf.train.MomentumOptimizer(
+        self.mom_optimizer = tf.train.MomentumOptimizer(
                 learning_rate=self.learning_rate,momentum=0.9).minimize(self.loss)
-            # Tell the new optimizer
-            self.optimizer._create_slots(var_list=vars)
-        else:
-            self.optimizer = tf.train.AdamOptimizer(
+        self.adam_optimizer = tf.train.AdamOptimizer(
                 learning_rate=self.learning_rate).minimize(self.loss)
 
         # Make a session
@@ -166,7 +162,7 @@ class PolicyValueNet():
         """perform a training step"""
         winner_batch = np.reshape(winner_batch, (-1, 1))
         loss, entropy, _ = self.session.run(
-                [self.loss, self.entropy, self.optimizer],
+                [self.loss, self.entropy, self.mom_optimizer],
                 feed_dict={self.input_states: state_batch,
                            self.mcts_probs: mcts_probs,
                            self.labels: winner_batch,
