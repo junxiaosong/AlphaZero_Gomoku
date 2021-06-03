@@ -81,6 +81,8 @@ class PolicyValueNet():
         if model_file != None:
             self.optimizer = tf.train.MomentumOptimizer(
                 learning_rate=self.learning_rate,momentum=0.9).minimize(self.loss)
+            # Tell the new optimizer
+            self.optimizer._create_slots(var_list=vars)
         else:
             self.optimizer = tf.train.AdamOptimizer(
                 learning_rate=self.learning_rate).minimize(self.loss)
