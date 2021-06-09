@@ -237,7 +237,7 @@ if __name__ == '__main__':
         init_model = None
     OUTPUT_DIR += datetime.utcnow().strftime("%Y%m%d%H%M%S")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    INTERMEDIATE_RESULT = OUTPUT_DIR + "intermediate_result.txt"
+    INTERMEDIATE_RESULT = OUTPUT_DIR + "/intermediate_result.txt"
     SCORE_OUTPUT = OUTPUT_DIR + "/scores.txt"
     CONSOLE_OUTPUT = OUTPUT_DIR + "/console.txt"
 
@@ -249,6 +249,6 @@ if __name__ == '__main__':
     print(f"score output : {SCORE_OUTPUT}")
     print(f"console output : {CONSOLE_OUTPUT}")
     print("**************************************************************")
-    
+
     training_pipeline = TrainPipeline(model_name, loss_function, forbidden_hands, init_model)
     training_pipeline.run()
