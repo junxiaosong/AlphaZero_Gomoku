@@ -21,7 +21,7 @@ from datetime import datetime
 import utils
 import os
 
-OUTPUT_DIR = "output/baseline_forbiddenhands" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
+OUTPUT_DIR = "output/baseline_forbiddenhands/" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 INTERMEDIATE_RESULT = OUTPUT_DIR + "intermediate_result.csv"
 SCORE_OUTPUT = OUTPUT_DIR + "/scores.txt"
@@ -209,5 +209,5 @@ class TrainPipeline():
 
 
 if __name__ == '__main__':
-    training_pipeline = TrainPipeline(init_model='output/baseline/current_policy.model')
+    training_pipeline = TrainPipeline(init_model='output/baseline_forbiddenhands/current_policy.model')
     training_pipeline.run()
