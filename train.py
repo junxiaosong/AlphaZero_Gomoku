@@ -223,15 +223,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='train.py')
     parser.add_argument('--ModelName', '-m', dest='ModelName', required=True, choices=['baseline', 'res30'])
     parser.add_argument('--LossFunction', '-l', dest='LossFunction', required=True, choices=['lv', 'lp', 'l+', 'lx'])
-    parser.add_argument('--EnableForbiddenHands', '-fh', dest='EnableForbiddenHands', action='store_true', help=r'Enable forbidden hands')
+    parser.add_argument('--EnableForbiddenHands', '-fh', dest='EnableForbiddenHands', action='store_false', help=r'Enable forbidden hands')
 
     args = parser.parse_args()
     model_name = args.ModelName
     loss_function = args.LossFunction
     forbidden_hands = args.EnableForbiddenHands
-    
-    print("Start new training process...")
-    print(f"ModelName: {model_name}, LossFunction: {loss_function}, EnableForbiddenHands: {forbidden_hands}")
     
     OUTPUT_DIR = "output/" + "baseline" if model_name == "baseline" else "res30"
     OUTPUT_DIR += "_forbiddenhands/" if forbidden_hands else "/"
@@ -243,10 +240,15 @@ if __name__ == '__main__':
     INTERMEDIATE_RESULT = OUTPUT_DIR + "intermediate_result.txt"
     SCORE_OUTPUT = OUTPUT_DIR + "/scores.txt"
     CONSOLE_OUTPUT = OUTPUT_DIR + "/console.txt"
+
+    print("**************************************************************")
+    print("Start new training process...")
+    print(f"ModelName: {model_name}, LossFunction: {loss_function}, EnableForbiddenHands: {forbidden_hands}")
     print(f"init model : {init_model}")
     print(f"intermediate result : {INTERMEDIATE_RESULT}")
     print(f"score output : {SCORE_OUTPUT}")
     print(f"console output : {CONSOLE_OUTPUT}")
+    print("**************************************************************")
     
     training_pipeline = TrainPipeline(model_name, loss_function, forbidden_hands, init_model)
     training_pipeline.run()
