@@ -147,7 +147,7 @@ class TrainPipeline():
                              np.var(np.array(winner_batch) - new_v.flatten()) /
                              np.var(np.array(winner_batch)))
 
-        utils.log(("batch i:{},"
+        utils.log(("batch:{},"
                 "episode_len:{},"
                 "kl:{:.5f},"
                 "lr_multiplier:{:.3f},"
