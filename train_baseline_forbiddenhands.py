@@ -9,20 +9,21 @@ from __future__ import print_function
 import random
 import numpy as np
 from collections import defaultdict, deque
-from game import Board, Game
+from game_baseline import Board, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
 #from policy_value_net import PolicyValueNet  # Theano and Lasagne
 #from policy_value_net_pytorch import PolicyValueNet  # Pytorch
-#from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
+from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
 #from policy_value_net_keras import PolicyValueNet # Keras
-from policy_value_net_res_tensorflow import PolicyValueNet # Tensorflow
+#from policy_value_net_res_tensorflow import PolicyValueNetRes30 # Tensorflow
 from datetime import datetime
 import utils
 import os
 
-OUTPUT_DIR = "output/" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
+OUTPUT_DIR = "output/baseline_forbiddenhands" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+INTERMEDIATE_RESULT = OUTPUT_DIR + "intermediate_result.csv"
 SCORE_OUTPUT = OUTPUT_DIR + "/scores.txt"
 CONSOLE_OUTPUT = OUTPUT_DIR + "/console.txt"
 
@@ -34,7 +35,8 @@ class TrainPipeline():
         self.n_in_row = 5
         self.board = Board(width=self.board_width,
                            height=self.board_height,
-                           n_in_row=self.n_in_row)
+                           n_in_row=self.n_in_row,
+                           forbidden_hands=True)
         self.game = Game(self.board)
         # training params
         self.learn_rate = 2e-3
@@ -101,7 +103,7 @@ class TrainPipeline():
             play_data = self.get_equi_data(play_data)
             self.data_buffer.extend(play_data)
 
-    def policy_update(self):
+    def policy_update(self, batch_num, episode_len):
         """update the policy-value net"""
         mini_batch = random.sample(self.data_buffer, self.batch_size)
         state_batch = [data[0] for data in mini_batch]
@@ -133,18 +135,23 @@ class TrainPipeline():
         explained_var_new = (1 -
                              np.var(np.array(winner_batch) - new_v.flatten()) /
                              np.var(np.array(winner_batch)))
-        utils.log(("kl:{:.5f},"
-               "lr_multiplier:{:.3f},"
-               "loss:{},"
-               "entropy:{},"
-               "explained_var_old:{:.3f},"
-               "explained_var_new:{:.3f}"
-               ).format(kl,
+
+        utils.log(("batch i:{},"
+                "episode_len:{},"
+                "kl:{:.5f},"
+                "lr_multiplier:{:.3f},"
+                "loss:{},"
+                "entropy:{},"
+                "explained_var_old:{:.3f},"
+                "explained_var_new:{:.3f}"
+                ).format(batch_num,
+                        episode_len,
+                        kl,
                         self.lr_multiplier,
                         loss,
                         entropy,
                         explained_var_old,
-                        explained_var_new), CONSOLE_OUTPUT)
+                        explained_var_new), INTERMEDIATE_RESULT)
         return loss, entropy
 
     def policy_evaluate(self, current_batch, n_games=10):
@@ -180,10 +187,8 @@ class TrainPipeline():
         try:
             for i in range(self.game_batch_num):
                 self.collect_selfplay_data(self.play_batch_size)
-                utils.log("batch i:{}, episode_len:{}".format(
-                        i+1, self.episode_len), CONSOLE_OUTPUT)
                 if len(self.data_buffer) > self.batch_size:
-                    loss, entropy = self.policy_update()
+                    loss, entropy = self.policy_update(i+1, self.episode_len)
                 # check the performance of the current model,
                 # and save the model params
                 if (i+1) % self.check_freq == 0:
@@ -204,5 +209,5 @@ class TrainPipeline():
 
 
 if __name__ == '__main__':
-    training_pipeline = TrainPipeline(init_model='output/current_policy.model')
+    training_pipeline = TrainPipeline(init_model='output/baseline/current_policy.model')
     training_pipeline.run()
