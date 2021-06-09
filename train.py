@@ -230,7 +230,8 @@ if __name__ == '__main__':
     loss_function = args.LossFunction
     forbidden_hands = args.EnableForbiddenHands
     
-    OUTPUT_DIR = "output/" + "baseline" if model_name == "baseline" else "res30"
+    OUTPUT_DIR = "output/"
+    OUTPUT_DIR += "baseline" if model_name == "baseline" else "res30"
     OUTPUT_DIR += "_forbiddenhands/" if forbidden_hands else "/"
     init_model = OUTPUT_DIR + "current_policy.model"
     if not os.path.exists(init_model):
