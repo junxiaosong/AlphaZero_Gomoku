@@ -51,9 +51,10 @@ class TrainPipeline():
         # num of simulations used for the pure mcts, which is used as
         # the opponent to evaluate the trained policy
         self.pure_mcts_playout_num = 1000
+        self.model_name = model_name
         if init_model:
             # start training from an initial policy-value net
-            if model_name == 'baseline':
+            if self.model_name == 'baseline':
                 self.policy_value_net = PolicyValueNet(self.board_width,
                                                     self.board_height,
                                                     loss_function,
@@ -65,7 +66,7 @@ class TrainPipeline():
                                                             model_file=init_model)
         else:
             # start training from a new policy-value net
-            if model_name == 'baseline':
+            if self.model_name == 'baseline':
                 self.policy_value_net = PolicyValueNet(self.board_width,
                                                     self.board_height,
                                                     loss_function)
@@ -105,7 +106,8 @@ class TrainPipeline():
         """collect self-play data for training"""
         for i in range(n_games):
             winner, play_data = self.game.start_self_play(self.mcts_player,
-                                                          temp=self.temp)
+                                                        self.model_name,
+                                                        temp=self.temp)
             play_data = list(play_data)[:]
             self.episode_len = len(play_data)
             # augment the data

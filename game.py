@@ -110,7 +110,7 @@ class Board(object):
             square_state[INPUT_STATE_CHANNEL_SIZE-1][:, :] = 1.0  # indicate the colour to play
         return square_state[:, ::-1, :]
 
-    def current_baseline_state(self):
+    def current_state(self):
         """return the board state from the perspective of the current baseline player.
         state shape: 4*width*height
         """
@@ -313,7 +313,7 @@ class Game(object):
                     print("Game end. Tie")
                 return winner
 
-    def start_self_play(self, player, is_shown=0, temp=1e-3):
+    def start_self_play(self, player, model_name, is_shown=0, temp=1e-3):
         """ start a self-play game using a MCTS player, reuse the search tree,
         and store the self-play data: (state, mcts_probs, z) for training
         """
@@ -325,7 +325,7 @@ class Game(object):
                                                  temp=temp,
                                                  return_prob=1)
             # store the data
-            states.append(self.board.current_state())
+            states.append(self.board.current_state() if model_name == 'baseline' else self.board.current_last16move_state())
             mcts_probs.append(move_probs)
             current_players.append(self.board.current_player)
             # perform a move

@@ -131,7 +131,7 @@ class PolicyValueNet():
         action and the score of the board state
         """
         legal_positions = board.availables
-        current_state = np.ascontiguousarray(board.current_baseline_state().reshape(
+        current_state = np.ascontiguousarray(board.current_state().reshape(
                 -1, 4, self.board_width, self.board_height))
         act_probs, value = self.policy_value(current_state)
         act_probs = zip(legal_positions, act_probs[0][legal_positions])
