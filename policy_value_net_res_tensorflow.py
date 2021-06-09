@@ -11,98 +11,108 @@ import tensorflow as tf
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 from game import INPUT_STATE_CHANNEL_SIZE
 
-class PolicyValueNet():
-    def __init__(self, board_width, board_height, model_file=None):
+class PolicyValueNetRes30():
+    def __init__(self, board_width, board_height, loss_function, model_file=None):
         self.board_width = board_width
         self.board_height = board_height
 
-        self.is_training = tf.placeholder(tf.bool)
-        # Define the tensorflow neural network
-        # 1. Input:
-        self.input_states = tf.placeholder(
-                tf.float32, shape=[None, INPUT_STATE_CHANNEL_SIZE, board_height, board_width])
-        self.input_state = tf.transpose(self.input_states, [0, 2, 3, 1])
-        
-        # 2. Common Networks Layers
-        self.block1 = self._block(self.input_state, 32, 3, is_training=self.is_training, scope="block1")
-        self.block2 = self._block(self.block1, 64, 3, is_training=self.is_training, scope="block2")
-        self.block3 = self._block(self.block2, 128, 3, is_training=self.is_training, scope="block3")
-        
-        # 3-1 Action Networks
-        self.action_conv = tf.layers.conv2d(inputs=self.block3, filters=4,
-                                            kernel_size=[1, 1], padding="same",
-                                            data_format="channels_last",
-                                            activation=tf.nn.relu)
-        # Flatten the tensor
-        self.action_conv_flat = tf.reshape(
-                self.action_conv, [-1, 4 * board_height * board_width])
-        # 3-2 Full connected layer, the output is the log probability of moves
-        # on each slot on the board
-        self.action_fc = tf.layers.dense(inputs=self.action_conv_flat,
-                                         units=board_height * board_width,
-                                         activation=tf.nn.log_softmax)
-        # 4 Evaluation Networks
-        self.evaluation_conv = tf.layers.conv2d(inputs=self.block3, filters=2,
-                                                kernel_size=[1, 1],
-                                                padding="same",
+        self.graph = tf.Graph()              # create graph for each instance individuly
+        with self.graph.as_default():        
+            self.is_training = tf.placeholder(tf.bool)
+            # Define the tensorflow neural network
+            # 1. Input:
+            self.input_states = tf.placeholder(
+                    tf.float32, shape=[None, INPUT_STATE_CHANNEL_SIZE, board_height, board_width])
+            self.input_state = tf.transpose(self.input_states, [0, 2, 3, 1])
+            
+            # 2. Common Networks Layers
+            self.block1 = self._block(self.input_state, 32, 3, is_training=self.is_training, scope="block1")
+            self.block2 = self._block(self.block1, 64, 3, is_training=self.is_training, scope="block2")
+            self.block3 = self._block(self.block2, 128, 3, is_training=self.is_training, scope="block3")
+            
+            # 3-1 Action Networks
+            self.action_conv = tf.layers.conv2d(inputs=self.block3, filters=4,
+                                                kernel_size=[1, 1], padding="same",
                                                 data_format="channels_last",
                                                 activation=tf.nn.relu)
-        self.evaluation_conv_flat = tf.reshape(
-                self.evaluation_conv, [-1, 2 * board_height * board_width])
-        self.evaluation_fc1 = tf.layers.dense(inputs=self.evaluation_conv_flat,
-                                              units=64, activation=tf.nn.relu)
-        # output the score of evaluation on current state
-        self.evaluation_fc2 = tf.layers.dense(inputs=self.evaluation_fc1,
-                                              units=1, activation=tf.nn.tanh)
+            # Flatten the tensor
+            self.action_conv_flat = tf.reshape(
+                    self.action_conv, [-1, 4 * board_height * board_width])
+            # 3-2 Full connected layer, the output is the log probability of moves
+            # on each slot on the board
+            self.action_fc = tf.layers.dense(inputs=self.action_conv_flat,
+                                            units=board_height * board_width,
+                                            activation=tf.nn.log_softmax)
+            # 4 Evaluation Networks
+            self.evaluation_conv = tf.layers.conv2d(inputs=self.block3, filters=2,
+                                                    kernel_size=[1, 1],
+                                                    padding="same",
+                                                    data_format="channels_last",
+                                                    activation=tf.nn.relu)
+            self.evaluation_conv_flat = tf.reshape(
+                    self.evaluation_conv, [-1, 2 * board_height * board_width])
+            self.evaluation_fc1 = tf.layers.dense(inputs=self.evaluation_conv_flat,
+                                                units=64, activation=tf.nn.relu)
+            # output the score of evaluation on current state
+            self.evaluation_fc2 = tf.layers.dense(inputs=self.evaluation_fc1,
+                                                units=1, activation=tf.nn.tanh)
 
-        # Define the Loss function
-        # 1. Label: the array containing if the game wins or not for each state
-        self.labels = tf.placeholder(tf.float32, shape=[None, 1])
-        # 2. Predictions: the array containing the evaluation score of each state
-        # which is self.evaluation_fc2
-        # 3-1. Value Loss function
-        self.value_loss = tf.losses.mean_squared_error(self.labels,
-                                                       self.evaluation_fc2)
-        # 3-2. Policy Loss function
-        self.mcts_probs = tf.placeholder(
-                tf.float32, shape=[None, board_height * board_width])
-        self.policy_loss = tf.negative(tf.reduce_mean(
-                tf.reduce_sum(tf.multiply(self.mcts_probs, self.action_fc), 1)))
-        # 3-3. L2 penalty (regularization)
-        l2_penalty_beta = 1e-4
-        vars = tf.trainable_variables()
-        l2_penalty = l2_penalty_beta * tf.add_n(
-            [tf.nn.l2_loss(v) for v in vars if 'bias' not in v.name.lower()])
-        # 3-4 Add up to be the Loss function
-        self.loss = self.value_loss + self.policy_loss + l2_penalty
+            # Define the Loss function
+            # 1. Label: the array containing if the game wins or not for each state
+            self.labels = tf.placeholder(tf.float32, shape=[None, 1])
+            # 2. Predictions: the array containing the evaluation score of each state
+            # which is self.evaluation_fc2
+            # 3-1. Value Loss function
+            self.value_loss = tf.losses.mean_squared_error(self.labels,
+                                                        self.evaluation_fc2)
+            # 3-2. Policy Loss function
+            self.mcts_probs = tf.placeholder(
+                    tf.float32, shape=[None, board_height * board_width])
+            self.policy_loss = tf.negative(tf.reduce_mean(
+                    tf.reduce_sum(tf.multiply(self.mcts_probs, self.action_fc), 1)))
+            # 3-3. L2 penalty (regularization)
+            l2_penalty_beta = 1e-4
+            vars = tf.trainable_variables()
+            l2_penalty = l2_penalty_beta * tf.add_n(
+                [tf.nn.l2_loss(v) for v in vars if 'bias' not in v.name.lower()])
+            # 3-4 Add up to be the Loss function
+            if loss_function == 'lv':
+                self.loss = self.value_loss + l2_penalty
+            elif loss_function == 'lp':
+                self.loss = self.policy_loss + l2_penalty
+            elif loss_function == 'l+':
+                self.loss = self.value_loss + self.policy_loss + l2_penalty
+            elif loss_function == 'lx':
+                self.loss = self.value_loss * self.policy_loss + l2_penalty
 
-        # Define the optimizer we use for training
-        self.learning_rate = tf.placeholder(tf.float32)
-        
-        self.adam_optimizer = tf.train.AdamOptimizer(
-                learning_rate=self.learning_rate).minimize(self.loss)
+            # Define the optimizer we use for training
+            self.learning_rate = tf.placeholder(tf.float32)
+            
+            self.adam_optimizer = tf.train.AdamOptimizer(
+                    learning_rate=self.learning_rate).minimize(self.loss)
 
-        # Make a session
-        self.session = tf.Session()
+            # Make a session
+            self.session = tf.Session(graph=self.graph)
 
-        # calc policy entropy, for monitoring only
-        self.entropy = tf.negative(tf.reduce_mean(
-                tf.reduce_sum(tf.exp(self.action_fc) * self.action_fc, 1)))
+            # calc policy entropy, for monitoring only
+            self.entropy = tf.negative(tf.reduce_mean(
+                    tf.reduce_sum(tf.exp(self.action_fc) * self.action_fc, 1)))
 
-        # Initialize variables
-        init = tf.global_variables_initializer()
-        self.session.run(init)
+            # Initialize variables
+            init = tf.global_variables_initializer()
+            self.session.run(init)
 
-        # For saving and restoring
-        self.saver = tf.train.Saver()
-        if model_file is not None:
-            self.restore_model(model_file)
+            # For saving and restoring
+            self.saver = tf.train.Saver()
+            if model_file is not None:
+                self.restore_model(model_file)
 
-        self.mom_optimizer = tf.train.MomentumOptimizer(
-                learning_rate=self.learning_rate,momentum=0.9).minimize(self.loss)
-        var_list = [var for var in tf.global_variables() if 'Momentum' in var.name]
-        self.session.run(tf.variables_initializer(var_list))
-
+            '''
+            self.mom_optimizer = tf.train.MomentumOptimizer(
+                    learning_rate=self.learning_rate,momentum=0.9).minimize(self.loss)
+            var_list = [var for var in tf.global_variables() if 'Momentum' in var.name]
+            self.session.run(tf.variables_initializer(var_list))
+            '''
     def _batch_norm(self, x, is_training, scope="bn"):
         z = tf.cond(is_training, lambda: batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None,is_training=True, reuse=None, trainable=True, scope=scope), 
                                 lambda: batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None,is_training=False, reuse=True, trainable=False, scope=scope))

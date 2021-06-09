@@ -9,26 +9,21 @@ from __future__ import print_function
 import random
 import numpy as np
 from collections import defaultdict, deque
-from game_baseline import Board, Game
+from game import Board, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
 #from policy_value_net import PolicyValueNet  # Theano and Lasagne
 #from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
 #from policy_value_net_keras import PolicyValueNet # Keras
-#from policy_value_net_res_tensorflow import PolicyValueNetRes30 # Tensorflow
+from policy_value_net_res_tensorflow import PolicyValueNetRes30 # Tensorflow
 from datetime import datetime
 import utils
 import os
-
-OUTPUT_DIR = "output/baseline_forbiddenhands/" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-INTERMEDIATE_RESULT = OUTPUT_DIR + "intermediate_result.csv"
-SCORE_OUTPUT = OUTPUT_DIR + "/scores.txt"
-CONSOLE_OUTPUT = OUTPUT_DIR + "/console.txt"
+import argparse
 
 class TrainPipeline():
-    def __init__(self, init_model=None):
+    def __init__(self, model_name, loss_function, forbidden_hands, init_model=None):
         # params of the board and the game
         self.board_width = 9
         self.board_height = 9
@@ -36,7 +31,7 @@ class TrainPipeline():
         self.board = Board(width=self.board_width,
                            height=self.board_height,
                            n_in_row=self.n_in_row,
-                           forbidden_hands=True)
+                           forbidden_hands=forbidden_hands)
         self.game = Game(self.board)
         # training params
         self.learn_rate = 2e-3
@@ -58,13 +53,27 @@ class TrainPipeline():
         self.pure_mcts_playout_num = 1000
         if init_model:
             # start training from an initial policy-value net
-            self.policy_value_net = PolicyValueNet(self.board_width,
-                                                   self.board_height,
-                                                   model_file=init_model)
+            if model_name == 'baseline':
+                self.policy_value_net = PolicyValueNet(self.board_width,
+                                                    self.board_height,
+                                                    loss_function,
+                                                    model_file=init_model)
+            else:
+                self.policy_value_net = PolicyValueNetRes30(self.board_width,
+                                                            self.board_height,
+                                                            loss_function,
+                                                            model_file=init_model)
         else:
             # start training from a new policy-value net
-            self.policy_value_net = PolicyValueNet(self.board_width,
-                                                   self.board_height)
+            if model_name == 'baseline':
+                self.policy_value_net = PolicyValueNet(self.board_width,
+                                                    self.board_height,
+                                                    loss_function)
+            else:
+                self.policy_value_net = PolicyValueNetRes30(self.board_width,
+                                                    self.board_height,
+                                                    loss_function)
+
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                       c_puct=self.c_puct,
                                       n_playout=self.n_playout,
@@ -209,5 +218,32 @@ class TrainPipeline():
 
 
 if __name__ == '__main__':
-    training_pipeline = TrainPipeline(init_model='output/baseline_forbiddenhands/current_policy.model')
+    parser = argparse.ArgumentParser(prog='train.py')
+    parser.add_argument('--ModelName', '-m', dest='ModelName', required=True, choices=['baseline', 'res30'])
+    parser.add_argument('--LossFunction', '-l', dest='LossFunction', required=True, choices=['lv', 'lp', 'l+', 'lx'])
+    parser.add_argument('--EnableForbiddenHands', '-fh', dest='EnableForbiddenHands', action='store_true', help=r'Enable forbidden hands')
+
+    args = parser.parse_args()
+    model_name = args.ModelName
+    loss_function = args.LossFunction
+    forbidden_hands = args.EnableForbiddenHands
+    
+    print("Start new training process...")
+    print(f"ModelName: {model_name}, LossFunction: {loss_function}, EnableForbiddenHands: {forbidden_hands}")
+    
+    OUTPUT_DIR = "output/" + "baseline" if model_name == "baseline" else "res30"
+    OUTPUT_DIR += "_forbiddenhands/" if forbidden_hands else "/"
+    init_model = OUTPUT_DIR + "current_policy.model"
+    init_model = None if not os.path.exists(init_model)
+    OUTPUT_DIR += datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    INTERMEDIATE_RESULT = OUTPUT_DIR + "intermediate_result.txt"
+    SCORE_OUTPUT = OUTPUT_DIR + "/scores.txt"
+    CONSOLE_OUTPUT = OUTPUT_DIR + "/console.txt"
+    print(f"init model : {init_model if init_model else "None"}")
+    print(f"intermediate result : {INTERMEDIATE_RESULT}")
+    print(f"score output : {SCORE_OUTPUT}")
+    print(f"console output : {CONSOLE_OUTPUT}")
+    
+    training_pipeline = TrainPipeline(model_name, loss_function, forbidden_hands, init_model)
     training_pipeline.run()

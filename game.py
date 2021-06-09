@@ -6,6 +6,8 @@
 from __future__ import print_function
 import numpy as np
 
+INPUT_STATE_CHANNEL_SIZE = 19
+
 class Board(object):
     """board for the game"""
 
@@ -56,6 +58,7 @@ class Board(object):
         self.availables = list(range(self.width * self.height))
         self.states = {}
         self.last_move = -1
+        self.last_16_move = [0]*(INPUT_STATE_CHANNEL_SIZE-3)
 
     def move_to_location(self, move):
         """
@@ -84,8 +87,31 @@ class Board(object):
             return -1
         return move
 
-    def current_state(self):
-        """return the board state from the perspective of the current player.
+    def current_last16move_state(self):
+        """return the board state from the perspective of the current res30 player.
+        state shape: INPUT_STATE_CHANNEL_SIZE*width*height
+        """
+
+        square_state = np.zeros((INPUT_STATE_CHANNEL_SIZE, self.width, self.height))
+        if self.states:
+            moves, players = np.array(list(zip(*self.states.items())))
+            move_curr = moves[players == self.current_player]
+            move_oppo = moves[players != self.current_player]
+
+            square_state[0][move_curr // self.width,
+                            move_curr % self.height] = 1.0
+            square_state[1][move_oppo // self.width,
+                            move_oppo % self.height] = 1.0
+            # indicate the last 16 move location
+            for i in range(INPUT_STATE_CHANNEL_SIZE-3):
+                square_state[2+i][np.array(self.last_16_move[i::2]) // self.width,
+                                np.array(self.last_16_move[i::2]) % self.height] = 1.0
+        if len(self.states) % 2 == 0:
+            square_state[INPUT_STATE_CHANNEL_SIZE-1][:, :] = 1.0  # indicate the colour to play
+        return square_state[:, ::-1, :]
+
+    def current_baseline_state(self):
+        """return the board state from the perspective of the current baseline player.
         state shape: 4*width*height
         """
 
@@ -113,6 +139,8 @@ class Board(object):
             else self.players[1]
         )
         self.last_move = move
+        self.last_16_move.pop(0)
+        self.last_16_move.append(move)
 
     def has_a_winner(self):
         width = self.width
@@ -120,7 +148,7 @@ class Board(object):
         states = self.states
         n = self.n_in_row
 
-        if self.forbidden_hands and self.states[self.last_move] == self.players[self.start_player] and self.check_forbidden_hands():
+        if self.forbidden_hands and self.states and self.states[self.last_move] == self.players[self.start_player] and self.check_forbidden_hands():
             return True, self.players[(self.start_player + 1) % 2]
 
         moved = list(set(range(width * height)) - set(self.availables))
@@ -279,11 +307,10 @@ class Game(object):
                 self.graphic(self.board, player1.player, player2.player)
             end, winner = self.board.game_end()
             if end:
-                if is_shown:
-                    if winner != -1:
+                if winner != -1:
                         print("Game end. Winner is", players[winner])
-                    else:
-                        print("Game end. Tie")
+                else:
+                    print("Game end. Tie")
                 return winner
 
     def start_self_play(self, player, is_shown=0, temp=1e-3):

@@ -12,7 +12,7 @@ from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 
 
 class PolicyValueNet():
-    def __init__(self, board_width, board_height, model_file=None):
+    def __init__(self, board_width, board_height, loss_function, model_file=None):
         self.board_width = board_width
         self.board_height = board_height
 
@@ -82,7 +82,14 @@ class PolicyValueNet():
             l2_penalty = l2_penalty_beta * tf.add_n(
             [tf.nn.l2_loss(v) for v in vars if 'bias' not in v.name.lower()])
             # 3-4 Add up to be the Loss function
-            self.loss = self.value_loss + self.policy_loss + l2_penalty
+            if loss_function == 'lv':
+                self.loss = self.value_loss + l2_penalty
+            elif loss_function == 'lp':
+                self.loss = self.policy_loss + l2_penalty
+            elif loss_function == 'l+':
+                self.loss = self.value_loss + self.policy_loss + l2_penalty
+            elif loss_function == 'lx':
+                self.loss = self.value_loss * self.policy_loss + l2_penalty
 
             # Define the optimizer we use for training
             self.learning_rate = tf.placeholder(tf.float32)
