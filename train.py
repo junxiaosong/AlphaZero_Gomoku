@@ -122,7 +122,7 @@ class TrainPipeline():
         winner_batch = [data[2] for data in mini_batch]
         old_probs, old_v = self.policy_value_net.policy_value(state_batch)
         for i in range(self.epochs):
-            loss, entropy = self.policy_value_net.train_step(
+            loss, value_loss, policy_loss, entropy = self.policy_value_net.train_step(
                     state_batch,
                     mcts_probs_batch,
                     winner_batch,
@@ -152,6 +152,8 @@ class TrainPipeline():
                 "kl:{:.5f},"
                 "lr_multiplier:{:.3f},"
                 "loss:{},"
+                "value_loss:{},"
+                "policy_loss:{},"
                 "entropy:{},"
                 "explained_var_old:{:.3f},"
                 "explained_var_new:{:.3f}"
@@ -160,6 +162,8 @@ class TrainPipeline():
                         kl,
                         self.lr_multiplier,
                         loss,
+                        value_loss,
+                        policy_loss,
                         entropy,
                         explained_var_old,
                         explained_var_new), INTERMEDIATE_RESULT)
@@ -184,7 +188,7 @@ class TrainPipeline():
             win_cnt[winner] += 1
         win_ratio = 1.0*(win_cnt[1] + 0.5*win_cnt[-1]) / n_games
         
-        output = "current self play batch: {}, num_playouts: {}, win: {}, lose: {}, tie: {}, win ratio: {}".format(
+        output = "current_batch:{},num_playouts:{},win:{},lose:{},tie:{},win_ratio:{}".format(
                 current_batch,
                 self.pure_mcts_playout_num,
                 win_cnt[1], win_cnt[2], win_cnt[-1], win_ratio)

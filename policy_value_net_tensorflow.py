@@ -140,13 +140,13 @@ class PolicyValueNet():
     def train_step(self, state_batch, mcts_probs, winner_batch, lr):
         """perform a training step"""
         winner_batch = np.reshape(winner_batch, (-1, 1))
-        loss, entropy, _ = self.session.run(
-                [self.loss, self.entropy, self.optimizer],
+        loss, value_loss, policy_loss, entropy, _ = self.session.run(
+                [self.loss, self.value_loss, self.policy_loss, self.entropy, self.optimizer],
                 feed_dict={self.input_states: state_batch,
                            self.mcts_probs: mcts_probs,
                            self.labels: winner_batch,
                            self.learning_rate: lr})
-        return loss, entropy
+        return loss, value_loss, policy_loss, entropy
 
     def save_model(self, model_path):
         self.saver.save(self.session, model_path)
