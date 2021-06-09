@@ -236,13 +236,14 @@ if __name__ == '__main__':
     OUTPUT_DIR = "output/" + "baseline" if model_name == "baseline" else "res30"
     OUTPUT_DIR += "_forbiddenhands/" if forbidden_hands else "/"
     init_model = OUTPUT_DIR + "current_policy.model"
-    init_model = None if not os.path.exists(init_model)
+    if not os.path.exists(init_model):
+        init_model = None
     OUTPUT_DIR += datetime.utcnow().strftime("%Y%m%d%H%M%S")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     INTERMEDIATE_RESULT = OUTPUT_DIR + "intermediate_result.txt"
     SCORE_OUTPUT = OUTPUT_DIR + "/scores.txt"
     CONSOLE_OUTPUT = OUTPUT_DIR + "/console.txt"
-    print(f"init model : {init_model if init_model else "None"}")
+    print(f"init model : {init_model}")
     print(f"intermediate result : {INTERMEDIATE_RESULT}")
     print(f"score output : {SCORE_OUTPUT}")
     print(f"console output : {CONSOLE_OUTPUT}")
