@@ -3,7 +3,8 @@ import math
 import pickle
 from game import Board, Game
 from mcts_alphaZero import MCTSPlayer
-from policy_value_net_res_tensorflow import PolicyValueNet # Tensorflow
+from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
+from policy_value_net_res_tensorflow import PolicyValueNetRes30 # Tensorflow
 from human_play import Human
 
 #定义棋盘类
@@ -73,18 +74,25 @@ class Gobang() :
 
         self.start_player = 0
         width, height, n_in_row = 9, 9, 5
-        model_file = 'output/current_policy.model'
+        model_file = 'output/best_policy.model'
+        baseline_file = 'output/baseline_policy.model'
         board = Board(width=width, height=height, n_in_row=n_in_row)
         self.game = Game(board)
         self.game.board.init_board(self.start_player)
-        self.best_policy = PolicyValueNet(width, height, model_file=model_file)
+        self.best_policy = PolicyValueNetRes30(width, height, 'l+', model_file=model_file)
+        self.baseline_policy = PolicyValueNet(width, height, 'l+', model_file=baseline_file)
         self.mcts_player = MCTSPlayer(self.best_policy.policy_value_fn,
+                                 c_puct=5,
+                                 n_playout=500)  # set larger n_playout for better performance
+        self.mcts_baseline_player = MCTSPlayer(self.baseline_policy.policy_value_fn,
                                  c_puct=5,
                                  n_playout=500)  # set larger n_playout for better performance
         self.human_player = Human()
         self.human_player.set_player_ind(1)
+        #self.mcts_baseline_player.set_player_ind(1)
         self.mcts_player.set_player_ind(2)
         self.players = {1:self.human_player, 2:self.mcts_player}
+        #self.players = {1:self.mcts_baseline_player, 2:self.mcts_player}
 
         self.options()
         
@@ -123,18 +131,18 @@ class Gobang() :
             self.order.append(current_move)
             self.board.canvas.create_oval(25+50*x-18 , 25+50*y-18 , 25+50*x+18 , 25+50*y+18 , fill = self.color,tags = "chessman_new")
             player_in_turn = self.get_current_player()
-            print(self.color, player_in_turn.__class__.__name__, f"{x}, {y}")
+            print(self.color, player_in_turn, f"{x}, {y}")
             self.game.board.do_move(current_move)
             end, winner = self.game.board.game_end()
             if end:
                 self.flag_win = 1
                 self.flag_empty = 0
-                print(self.color, player_in_turn.__class__.__name__, "win!!!")
-                self.game_print.set(self.color+"-"+player_in_turn.__class__.__name__+"获胜")
+                print(self.color, player_in_turn, "win!!!")
+                self.game_print.set(self.color+"-"+str(player_in_turn)+"获胜")
             else:
                 self.change_color()
                 player_in_turn = self.get_current_player()
-                self.game_print.set("请"+self.color+"-"+player_in_turn.__class__.__name__+"落子")
+                self.game_print.set("请"+self.color+"-"+str(player_in_turn)+"落子")
                 if player_in_turn is self.human_player:
                     return
                 self.board.window.update()
@@ -259,25 +267,40 @@ class Gobang() :
             return
         self.flag_win = 0
         print(" New game start...")
-        player_in_turn = self.get_current_player()
-        self.game_print.set("请"+self.color+"-"+player_in_turn.__class__.__name__+"落子")
-        self.board.window.update()
-        if player_in_turn is self.human_player:
-            return
 
-        move = player_in_turn.get_action(self.game.board)
-        x = move%9
-        y = move//9    
-        self.db[y][x] = self.color_count
-        self.order.append(move)
-        self.board.canvas.create_oval(25+50*x-18 , 25+50*y-18 , 25+50*x+18 , 25+50*y+18 , fill = self.color,tags = "chessman_new")
-        print(self.color, player_in_turn.__class__.__name__, f"{x}, {y}")
-        self.game.board.do_move(move)
-        self.change_color()
-        player_in_turn = self.get_current_player()
-        self.game_print.set("请"+self.color+"-"+player_in_turn.__class__.__name__+"落子")
-        self.board.window.update()
+        while True:
+            player_in_turn = self.get_current_player()
+            self.game_print.set("请"+self.color+"-"+str(player_in_turn)+"落子")
+            self.board.window.update()
+            if player_in_turn is self.human_player:
+                return
 
+            if len(self.order) > 0:
+                last_move = self.order[-1]
+                last_y = last_move//9
+                last_x = last_move%9
+                self.change_color()
+                self.board.canvas.delete("chessman_new")
+                self.board.canvas.create_oval(25+50*last_x-15 , 25+50*last_y-15 , 25+50*last_x+15 , 25+50*last_y+15 , fill = self.color,tags = "chessman")
+                self.change_color()
+
+            move = player_in_turn.get_action(self.game.board)
+            x = move%9
+            y = move//9    
+            self.db[y][x] = self.color_count
+            self.order.append(move)
+            self.board.canvas.create_oval(25+50*x-18 , 25+50*y-18 , 25+50*x+18 , 25+50*y+18 , fill = self.color,tags = "chessman_new")
+            print(self.color, player_in_turn, f"{x}, {y}")
+            self.game.board.do_move(move)
+            end, winner = self.game.board.game_end()
+            if end:
+                self.flag_win = 1
+                self.flag_empty = 0
+                print(self.color, player_in_turn, "win!!!")
+                self.game_print.set(self.color+"-"+str(player_in_turn)+"获胜")
+                return
+            else:
+                self.change_color()
 
     def options(self) :
         self.board.canvas.bind("<Button-1>",self.chess_moving)

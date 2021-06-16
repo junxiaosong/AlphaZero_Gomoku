@@ -14,7 +14,7 @@ from mcts_alphaZero import MCTSPlayer
 # from policy_value_net_numpy import PolicyValueNetNumpy
 # from policy_value_net import PolicyValueNet  # Theano and Lasagne
 # from policy_value_net_pytorch import PolicyValueNet  # Pytorch
-from policy_value_net_res_tensorflow import PolicyValueNet # Tensorflow
+from policy_value_net_res_tensorflow import PolicyValueNetRes30 # Tensorflow
 # from policy_value_net_keras import PolicyValueNet  # Keras
 
 
@@ -61,7 +61,7 @@ def run():
         # mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5, n_playout=400)
 
         # load the provided model (trained in Theano/Lasagne) into a MCTS player written in pure numpy
-        best_policy = PolicyValueNet(width, height, model_file=model_file)
+        best_policy = PolicyValueNetRes30(width, height, 'l+', model_file=model_file)
         mcts_player = MCTSPlayer(best_policy.policy_value_fn,
                                  c_puct=5,
                                  n_playout=400)  # set larger n_playout for better performance

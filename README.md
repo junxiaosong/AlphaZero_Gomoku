@@ -54,6 +54,40 @@ and then execute: ``python train.py``  (To use GPU in PyTorch, set ``use_gpu=Tru
 
 The models (best_policy.model and current_policy.model) will be saved every a few updates (default 50).  
 
+
+With Tensorflow and ResNet30, uncomment the line 
+```
+# from policy_value_net_res_tensorflow import PolicyValueNetRes30 # Tensorflow
+```
+Then execute:
+```
+python train.py -h
+    -h, --help            show this help message and exit
+    --ModelName {baseline,res30}, -m {baseline,res30}
+    --LossFunction {lv,lp,l+,lx}, -l {lv,lp,l+,lx}
+    --EnableForbiddenHands, -fh Enable forbidden hands
+```
+baseline_l+:
+```
+python train.py --ModelName baseline --LossFunction l+ --EnableForbiddenHands True
+```
+
+baseline_lp:
+```
+python train.py --ModelName baseline --LossFunction lp --EnableForbiddenHands True
+```
+
+res30_l+:
+```
+python train.py --ModelName res30 --LossFunction l+ --EnableForbiddenHands True
+```
+
+res30_lp:
+```
+python train.py --ModelName res30 --LossFunction lp --EnableForbiddenHands True
+```
+
+
 **Note:** the 4 provided models were trained using Theano/Lasagne, to use them with PyTorch, please refer to [issue 5](https://github.com/junxiaosong/AlphaZero_Gomoku/issues/5).
 
 **Tips for training:**
