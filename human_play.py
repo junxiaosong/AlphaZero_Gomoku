@@ -51,7 +51,7 @@ def run():
     width, height = 9, 9
     model_file = 'output/best_policy.model'
     try:
-        board = Board(width=width, height=height, n_in_row=n)
+        board = Board(width=width, height=height, n_in_row=n, forbidden_hands=True)
         game = Game(board)
 
         # ############### human VS AI ###################
