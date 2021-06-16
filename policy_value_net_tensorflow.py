@@ -8,7 +8,6 @@ Tested in Tensorflow 1.4 and 1.5
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 
 
 class PolicyValueNet():
