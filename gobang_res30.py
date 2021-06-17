@@ -76,7 +76,7 @@ class Gobang() :
         width, height, n_in_row = 9, 9, 5
         model_file = 'output/best_policy.model'
         baseline_file = 'output/baseline_policy.model'
-        board = Board(width=width, height=height, n_in_row=n_in_row, forbidden_hands=True)
+        board = Board(width=width, height=height, n_in_row=n_in_row, forbidden_hands=False)
         self.game = Game(board)
         self.game.board.init_board(self.start_player)
         self.best_policy = PolicyValueNetRes30(width, height, 'l+', model_file=model_file)

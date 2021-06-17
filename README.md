@@ -87,6 +87,12 @@ res30_lp:
 python train.py --ModelName res30 --LossFunction lp --EnableForbiddenHands True
 ```
 
+Human play with AI
+
+```
+pip install tensorflow==1.14.0
+python gobang_res30.py
+```
 
 **Note:** the 4 provided models were trained using Theano/Lasagne, to use them with PyTorch, please refer to [issue 5](https://github.com/junxiaosong/AlphaZero_Gomoku/issues/5).
 
@@ -95,4 +101,4 @@ python train.py --ModelName res30 --LossFunction lp --EnableForbiddenHands True
 2. For the case of 8 * 8 board and 5 in a row, it may need 2000~3000 self-play games to get a good model, and it may take about 2 days on a single PC.
 
 ### Further reading
-My article describing some details about the implementation in Chinese: [https://zhuanlan.zhihu.com/p/32089487](https://zhuanlan.zhihu.com/p/32089487) 
+My article describing some details about the implementation in Chinese: [https://zhuanlan.zhihu.com/p/32089487](https://zhuanlan.zhihu.com/p/32089487)
