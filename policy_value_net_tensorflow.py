@@ -7,7 +7,8 @@ Tested in Tensorflow 1.4 and 1.5
 """
 
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 
 class PolicyValueNet():
@@ -112,6 +113,8 @@ class PolicyValueNet():
                 feed_dict={self.input_states: state_batch}
                 )
         act_probs = np.exp(log_act_probs)
+        #print(act_probs)
+        #print(value)
         return act_probs, value
 
     def policy_value_fn(self, board):
@@ -128,6 +131,7 @@ class PolicyValueNet():
         return act_probs, value
 
     def train_step(self, state_batch, mcts_probs, winner_batch, lr):
+        
         """perform a training step"""
         winner_batch = np.reshape(winner_batch, (-1, 1))
         loss, entropy, _ = self.session.run(
