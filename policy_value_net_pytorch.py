@@ -106,12 +106,13 @@ class PolicyValueNet():
             log_act_probs, value = self.policy_value_net(
                     Variable(torch.from_numpy(current_state)).cuda().float())
             act_probs = np.exp(log_act_probs.data.cpu().numpy().flatten())
+            value = value.data.cpu().numpy()[0][0]
         else:
             log_act_probs, value = self.policy_value_net(
                     Variable(torch.from_numpy(current_state)).float())
             act_probs = np.exp(log_act_probs.data.numpy().flatten())
+            value = value.data.numpy()[0][0]
         act_probs = zip(legal_positions, act_probs[legal_positions])
-        value = value.data[0][0]
         return act_probs, value
 
     def train_step(self, state_batch, mcts_probs, winner_batch, lr):
